@@ -1,0 +1,86 @@
+.imageIcon1 {
+    align-self: stretch;
+    border-radius: 8px;
+    width: 426px; /* Reduce width */
+    height: 536px; /* Reduce height */
+    background-image: url('/Users/filip/Documents/gloria/UBB/facultate/Anul II/semester2/coffee-website/src/images/Icon1.png');
+    background-size: contain; /* Ensures the whole image fits inside */
+    background-repeat: no-repeat; /* Prevents repetition */
+    background-position: center; /* Centers the image */
+}
+
+.imageIcon2 {
+    align-self: stretch;
+    border-radius: 8px;
+    width: 426px; /* Reduce width */
+    height: 536px; /* Reduce height */
+    background-image: url('/Users/filip/Documents/gloria/UBB/facultate/Anul II/semester2/coffee-website/src/images/icon2.png');
+    background-size: contain; /* Ensures the whole image fits inside */
+    background-repeat: no-repeat; /* Prevents repetition */
+    background-position: center; /* Centers the image */
+}
+
+.imageIcon3 {
+    align-self: stretch;
+    border-radius: 8px;
+    width: 426px; /* Reduce width */
+    height: 536px; /* Reduce height */
+    background-image: url('/Users/filip/Documents/gloria/UBB/facultate/Anul II/semester2/coffee-website/src/images/Icon3.png');
+    background-size: contain; /* Ensures the whole image fits inside */
+    background-repeat: no-repeat; /* Prevents repetition */
+    background-position: center;
+}
+
+.subheading {
+    align-self: stretch;
+    position: relative;
+    line-height: 150%;
+    font-weight: 500;
+    font-family: Georgia;
+}
+.bodyTextFor {
+    align-self: stretch;
+    position: relative;
+    line-height: 150%;
+    color: #828282;
+    font-family: Georgia;
+}
+.copy {
+    width: 381px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 4px;
+}
+
+.container_image1 {
+    position: relative;
+    float: left;
+    margin-left: 50px;
+    bottom: auto;
+}
+.container_image2 {
+    position: relative;
+    bottom: auto;
+}
+
+.container_image3 {
+    position: relative;
+    float: right;
+    margin-right: 50px;
+    buttom: auto;
+}
+
+.Title {
+    left: 80px;
+    top: -60px;
+    width: 100%;
+    position: relative;
+    font-size: 48px;
+    letter-spacing: -0.02em;
+    display: inline-block;
+    font-family: Georgia;
+    color: #000;
+    text-align: left;
+}

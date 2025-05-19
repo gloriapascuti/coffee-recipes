@@ -1,0 +1,117 @@
+.Title {
+    font-family: Georgia;
+    font-size: 48px;
+    left: 80px;
+    position: relative;
+    width: 100%;
+    text-align: left;
+    letter-spacing: -0.02em;
+    display: inline-block;
+    margin-bottom: 30px;
+    margin-top: 50px;
+}
+
+.aTerrificPiece {
+    align-self: stretch;
+    position: relative;
+    line-height: 150%;
+    font-weight: 500;
+    font-family: Georgia;
+}
+.cappuccinoIcon {
+    width: 45px;
+    position: relative;
+    border-radius: 50%;
+    height: 45px;
+    object-fit: cover;
+    background-image: url("/Users/filip/Documents/gloria/UBB/facultate/Anul II/semester2/coffee-website/src/images/cappuccino.jpeg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    /*background-position: top;*/
+}
+.name {
+    position: relative;
+    line-height: 150%;
+    font-weight: 500;
+    font-family: Georgia;
+}
+.description {
+    position: relative;
+    line-height: 150%;
+    font-weight: 500;
+    color: #828282;
+    font-family: Georgia;
+}
+.nameParent {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 2px;
+    font-family: Georgia;
+}
+.avatar {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 16px;
+    font-size: 16px;
+    font-family: Georgia;
+}
+.customerQuote {
+    flex: 1;
+    border-radius: 12px;
+    background-color: #fff;
+    border: 1px solid #e6e6e6;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 32px;
+    gap: 48px;
+    margin-left: 20px;
+    margin-bottom: 50px;
+}
+.customerQuote1 {
+    align-self: stretch;
+    flex: 1;
+    border-radius: 12px;
+    background-color: #fff;
+    border: 1px solid #e6e6e6;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 32px;
+    gap: 48px;
+    margin-bottom: 50px;
+}
+.customerQuote2 {
+    flex: 1;
+    border-radius: 12px;
+    background-color: #fff;
+    border: 1px solid #e6e6e6;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 32px;
+    gap: 48px;
+    margin-right: 20px;
+    margin-bottom: 50px;
+}
+.cards {
+    width: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 32px;
+    text-align: left;
+    font-size: 24px;
+    color: #000;
+    font-family: Georgia;
+}
+

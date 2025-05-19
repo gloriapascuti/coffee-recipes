@@ -1,0 +1,28 @@
+.image {
+    width: 626px;
+    top: 250px;
+    position: relative;
+    height: 782px;
+    background-image: url('/Users/filip/Documents/gloria/UBB/facultate/Anul II/semester2/coffee-website/src/images/V60 Manual Pour Over Coffee.jpeg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: top;
+    margin-bottom: 50px;
+    margin-left: 100px;
+    float: left;
+}
+
+.talkAboutSpeciality {
+    width: 631px;
+    position: relative;
+    font-size: 22px;
+    line-height: 150%;
+    font-weight: 500;
+    font-family: Georgia;
+    color: #000;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    height: 1250px;
+}
+

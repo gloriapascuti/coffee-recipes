@@ -1,0 +1,7 @@
+Django>=5.0
+gunicorn
+djangorestframework
+channels
+sqlparse
+asgiref
+# Add any other packages you use (e.g., psycopg2-binary for Postgres)

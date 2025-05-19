@@ -1,0 +1,107 @@
+/*.page {*/
+/*    position: relative;*/
+/*    line-height: 150%;*/
+/*    font-weight: 500;*/
+/*}*/
+
+/*.items {*/
+/*    position: absolute;*/
+/*    top: 56px;*/
+/*    right: 80px;*/
+/*    display: flex;*/
+/*    flex-direction: row;*/
+/*    align-items: center;*/
+/*    justify-content: flex-end;*/
+/*    gap: 48px;*/
+/*}*/
+
+/*.siteTitle {*/
+/*    position: absolute;*/
+/*    top: 67px;*/
+/*    left: 80px;*/
+/*    line-height: 150%;*/
+/*    font-weight: 500;*/
+/*    font-size: 20px;*/
+/*    color: black;*/
+/*    font-family: Inter, serif;*/
+/*}*/
+
+/*.header {*/
+/*    width: 100%;*/
+/*    position: relative;*/
+/*    background-color: white;*/
+/*    height: 164px;*/
+/*    overflow: hidden;*/
+/*    text-align: left;*/
+/*    font-size: 20px;*/
+/*    color: black;*/
+/*    font-family: Inter, serif;*/
+/*}*/
+
+/*!*.header {*!*/
+/*!*    display: flex;*!*/
+/*!*    justify-content: space-between;*!*/
+/*!*    align-items: center;*!*/
+/*!*    padding: 20px 80px;*!*/
+/*!*    height: 164px;*!*/
+/*!*}*!*/
+
+/*!*.siteTitle {*!*/
+/*!*    font-size: 20px;*!*/
+/*!*    font-weight: 500;*!*/
+/*!*}*!*/
+
+/*!*.items {*!*/
+/*!*    display: flex;*!*/
+/*!*    gap: 48px;*!*/
+/*!*}*!*/
+
+.page {
+    position: relative;
+    line-height: 150%;
+    font-weight: 500;
+    background-color: white; /* Inner element stays white */
+    padding: 10px;
+    font-family: Georgia;
+}
+
+.items {
+    position: absolute;
+    top: 56px;
+    right: 80px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 48px;
+}
+.siteTitle {
+    position: absolute;
+    top: 67px;
+    left: 80px;
+    line-height: 150%;
+    font-weight: 500;
+    font-family: Georgia;
+}
+
+.Title {
+    left: 20px;
+    top: 175px;
+    width: 100%;
+    position: relative;
+    font-size: 64px;
+    letter-spacing: -0.02em;
+    display: inline-block;
+    font-family: Georgia;
+    color: #000;
+    text-align: left;
+}
+
+.descriptionTitle {
+    position: absolute;
+    left: 70px;
+    top: 260px;
+    line-height: 150%;
+    font-weight: 500;
+    font-family: Georgia;
+}

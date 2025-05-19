@@ -1,0 +1,55 @@
+.status-indicator {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.status-online {
+    background-color: #e6f7e6;
+    color: #2e7d32;
+}
+
+.status-online .status-dot {
+    background-color: #2e7d32;
+}
+
+.status-offline {
+    background-color: #ffebee;
+    color: #c62828;
+}
+
+.status-offline .status-dot {
+    background-color: #c62828;
+}
+
+.status-server-offline {
+    background-color: #fff3e0;
+    color: #ef6c00;
+}
+
+.status-server-offline .status-dot {
+    background-color: #ef6c00;
+}
+
+.status-offline-mode {
+    background-color: #e3f2fd;
+    color: #1565c0;
+}
+
+.status-offline-mode .status-dot {
+    background-color: #1565c0;
+} 

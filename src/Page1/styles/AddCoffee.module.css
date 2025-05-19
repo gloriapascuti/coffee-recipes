@@ -1,0 +1,173 @@
+/*.container {*/
+/*    display: flex;*/
+/*    justify-content: space-between; !* Equal spacing *!*/
+/*    align-items: center; !* Align items vertically *!*/
+/*    gap: 50px; !* Space between form and image *!*/
+/*    width: 100%; !* Full width *!*/
+/*    padding: 20px; !* Some padding *!*/
+/*}*/
+
+/*.coffees {*/
+/*    !*position: relative;*!*/
+/*    !*float: right;*!*/
+/*    !*margin-right: 50px;*!*/
+/*    !*buttom: auto;*!*/
+/*    width: 50%;*/
+/*    display: flex;*/
+/*    justify-items: center;*/
+/*    align-items: center;*/
+/*}*/
+
+/*.add_container {*/
+/*    !*position: relative;*!*/
+/*    !*float: left;*!*/
+/*    !*margin-left: 50px;*!*/
+/*    !*width: 520px;*!*/
+/*    !*height: 480px;*!*/
+/*    !*width: 50%;*!*/
+/*    !*max-width: 500px;*!*/
+/*}*/
+
+/*.coffees_image {*/
+/*    position: relative;*/
+/*    align-self: stretch;*/
+/*    background-image: url('/Users/filip/Documents/gloria/UBB/facultate/Anul II/semester2/MPP/coffee-website/src/images/Coffee Drinks to Start Your Day.jpeg');*/
+/*    background-size: contain;*/
+/*    background-repeat: no-repeat;*/
+/*    background-position: center;*/
+/*    width: 567px;*/
+/*    height: 737px;*/
+/*}*/
+
+/*.Title {*/
+/*    left: 80px;*/
+/*    top: 70px;*/
+/*    width: 100%;*/
+/*    position: relative;*/
+/*    font-size: 48px;*/
+/*    letter-spacing: -0.02em;*/
+/*    display: inline-block;*/
+/*    font-family: Inter;*/
+/*    color: #000;*/
+/*    text-align: left;*/
+/*}*/
+
+/*.subtitle {*/
+/*    position: relative;*/
+/*    font-size: 24px;*/
+/*    letter-spacing: -0.02em;*/
+/*    display: inline-block;*/
+/*    font-family: Inter;*/
+/*    color: #000;*/
+/*    text-align: left;*/
+/*}*/
+
+/* Overall Page Styling */
+.pageContainer {
+    padding: 50px;
+    width: 100%;
+    display: flex;
+    /*flex-direction: column;*/
+    /*align-items: flex-start;*/
+}
+
+/* Title Styling */
+.Title {
+    left: 80px;
+    top: 95px;
+    width: 100%;
+    position: relative;
+    font-size: 48px;
+    letter-spacing: -0.02em;
+    display: inline-block;
+    font-family: Georgia;
+    color: #000;
+    text-align: left;
+    margin-top: 50px;
+}
+
+/* Flexbox for Form & Image */
+.container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 1200px;
+}
+
+/* Left Side - Form Styling */
+.formContainer {
+    width: 45%;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Label Styling */
+.subtitle {
+    position: relative;
+    font-size: 18px;
+    /*font-weight: 600;*/
+    margin-bottom: 5px;
+    font-family: Georgia;
+}
+
+/* Input Field Styling */
+.inputGroup {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 30px;
+}
+
+input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    font-family: Georgia;
+}
+
+/* Button Styling */
+.addButton {
+    background-color: black;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 10px;
+    font-family: Georgia;
+}
+
+.addButton:hover {
+    background-color: #333;
+}
+
+/* List Styling */
+.itemsList {
+    margin-top: 20px;
+    padding-left: 20px;
+}
+
+/* Right Side - Image Styling */
+.imageContainer {
+    float: right;
+    margin-right: 50px;
+    /*width: 50%;*/
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.coffeeImage {
+    width: 520px;
+    height: 600px;
+    /*width: 100%;*/
+    /*max-width: 500px;*/
+    /*height: auto;*/
+    background-image: url('/Users/filip/Documents/gloria/UBB/facultate/Anul II/semester2/coffee-website/src/images/Coffee Drinks to Start Your Day.jpeg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+}
