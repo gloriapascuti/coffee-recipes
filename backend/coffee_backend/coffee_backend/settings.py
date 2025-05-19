@@ -149,7 +149,8 @@ CHANNEL_LAYERS = {
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": "/Users/filip/Documents/gloria/UBB/facultate/Anul II/semester2/MPP/coffee-website/backend/coffee_backend/db.sqlite3",
+        # "NAME": "/Users/filip/Documents/gloria/UBB/facultate/Anul II/semester2/MPP/coffee-website/backend/coffee_backend/db.sqlite3",
+        "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
     }
 }
 
