@@ -191,7 +191,7 @@ export const useCoffee = () => {
 
 // your DRF URLs
 const API_ROOT   = "http://127.0.0.1:8000/api";
-const COFFEE_URL = `${API_ROOT}/coffee/`;
+const COFFEE_URL = `${API_ROOT}/`;
 const ORIGINS_URL= `${API_ROOT}/origins/`;
 const UPLOAD_URL = `${API_ROOT}/upload/`;
 
