@@ -21,7 +21,7 @@ export default function RUD() {
         deleteCoffee
     } = useContext(CoffeeContext);
 
-    // toggle for “only mine”
+    // toggle for "only mine"
     const [showMine, setShowMine] = useState(false);
 
     // search/filter/sort state
@@ -145,6 +145,7 @@ export default function RUD() {
                 <ul className="mt-4">
                     <InfiniteScroll
                         data={sorted}
+                        loading={false}
                         handleDelete={handleDelete}
                         handleEdit={handleEdit}
                         handleSaveEdit={handleSaveEdit}

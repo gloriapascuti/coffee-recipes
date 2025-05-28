@@ -179,6 +179,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models.coffee import Coffee, Origin
 from .models.uploads import UploadedFile
@@ -210,26 +211,36 @@ class RegisterView(APIView):
         serializer = RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        token, _ = Token.objects.get_or_create(user=user)
-        return Response(
-            {"token": token.key, "user_id": user.id, "username": user.username},
-            status=status.HTTP_201_CREATED
-        )
+        
+        # Generate JWT tokens
+        refresh = RefreshToken.for_user(user)
+        
+        return Response({
+            'access': str(refresh.access_token),
+            'refresh': str(refresh),
+            'user_id': user.id,
+            'username': user.username
+        }, status=status.HTTP_201_CREATED)
 
 
-class LoginView(ObtainAuthToken):
+class LoginView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
         serializer = LoginSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
+        
         # Update last_login
         user.last_login = timezone.now()
         user.save(update_fields=['last_login'])
-        token, _ = Token.objects.get_or_create(user=user)
+        
+        # Generate JWT tokens
+        refresh = RefreshToken.for_user(user)
+        
         return Response({
-            'token': token.key,
+            'access': str(refresh.access_token),
+            'refresh': str(refresh),
             'user_id': user.id,
             'username': user.username
         })
@@ -311,7 +322,10 @@ class FileUploadView(APIView):
 
 
 class UserList(APIView):
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    """
+    GET /api/users/ → admin only
+    """
+    permission_classes = [IsAdminUser]
 
     def get(self, request):
         users = AuthUser.objects.all()

@@ -20,11 +20,11 @@ const InfiniteScroll = ({data, loading, handleDelete, handleEdit, handleSaveEdit
     };
 
     useEffect(() => {
-        window.addEventListener('scroll', handleScroll);
+        // window.addEventListener('scroll', handleScroll);
 
-        return () => {
-            window.removeEventListener('scroll', handleScroll);
-        };
+        // return () => {
+        //     window.removeEventListener('scroll', handleScroll);
+        // };
     }, [loading]);
 
     return (

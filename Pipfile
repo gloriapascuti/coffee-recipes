@@ -10,6 +10,7 @@ daphne = "*"
 faker = "*"
 django = "*"
 channels = "*"
+djangorestframework-simplejwt = "*"
 
 [dev-packages]
 

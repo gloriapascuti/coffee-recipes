@@ -1,4 +1,5 @@
 // src/authentication/Register.js
+import styles from './styles/Register.module.css'
 import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
@@ -34,7 +35,7 @@ export default function Register() {
     };
 
     return (
-        <div style={{ maxWidth: '400px', margin: '100px auto' }}>
+        <div style={{ maxWidth: '400px', margin: '100px auto', fontFamily: 'Georgia'  }}>
             <h2>Register</h2>
             {error && <div style={{ color: 'red' }}>{error}</div>}
             <form onSubmit={handleSubmit}>
@@ -58,7 +59,7 @@ export default function Register() {
                            onChange={e => setPassword(e.target.value)}
                            required />
                 </div>
-                <button type="submit" style={{ marginTop: '20px' }}>Register</button>
+                <button type="submit" className={styles.registerButton}>Register</button>
             </form>
         </div>
     );

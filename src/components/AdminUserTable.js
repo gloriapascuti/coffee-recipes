@@ -57,33 +57,47 @@
 // src/components/AdminUserTable.js
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useCoffee } from '../CoffeeContext';
 
 export default function AdminUserTable() {
     const [users, setUsers] = useState([]);
-    const userId = localStorage.getItem('user_id');
+    const { user, accessToken } = useCoffee();
+
+    // Debug logging
+    console.log('AdminUserTable - Current user:', user);
+    console.log('AdminUserTable - Current access token:', accessToken);
 
     useEffect(() => {
-        if (userId === '1') {
-            const token = localStorage.getItem('token');
+        console.log('AdminUserTable useEffect - user:', user);
+        if (user && user.id === 1) {
+            console.log('AdminUserTable - Making API request with token:', accessToken);
             axios
                 .get('http://127.0.0.1:8000/api/users/', {
-                    headers: { Authorization: `Token ${token}` }
+                    headers: { Authorization: `Bearer ${accessToken}` }
                 })
                 .then(res => {
+                    console.log('AdminUserTable - API response:', res.data);
                     setUsers(res.data);
-                    console.log('AdminUserTable users:', res.data);
                 })
-                .catch(console.error);
+                .catch(error => {
+                    console.error('Error fetching users:', error);
+                    if (error.response) {
+                        console.error('Error response:', error.response.data);
+                        console.error('Error status:', error.response.status);
+                    }
+                });
+        } else {
+            console.log('AdminUserTable - Not admin user, skipping API request');
         }
-    }, [userId]);
+    }, [user, accessToken]);
 
-    // Only render for the admin user (id === '1')
-    if (userId !== '1') {
+    // Debug logging for render condition
+    console.log('AdminUserTable - Rendering check, user:', user, 'should render:', user && user.id === 1);
+
+    // Only render for the admin user (id === 1)
+    if (!user || user.id !== 1) {
         return null;
     }
-
-    const formatDate = isoString =>
-        isoString ? new Date(isoString).toLocaleString() : '';
 
     return (
         <div style={{ margin: '2rem' }}>
