@@ -18,6 +18,7 @@ import EntryPage from './authentication/EntryPage';
 import Login from './authentication/Login';
 import Register from './authentication/Register';
 import PrivateRoute from './authentication/PrivateRoute';
+import UserSettings from './authentication/UserSettings';
 import './App.css';
 import './components/StatusIndicator.css';
 
@@ -49,6 +50,7 @@ function App() {
                             </>
                         )}
                     />
+                    <PrivateRoute path="/settings" component={UserSettings} />
                     <Redirect to="/" />
                 </Switch>
             </CoffeeProvider>

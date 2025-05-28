@@ -1,8 +1,6 @@
 from django.urls import path
 from .views import (
     healthcheck,
-    RegisterView,
-    LoginView,
     CoffeeViewSet,
     OriginView,
     FileUploadView,
@@ -17,13 +15,7 @@ urlpatterns = [
     # Health check
     path('healthcheck/', healthcheck, name='healthcheck'),
 
-    # Authentication
-    path('register/', RegisterView.as_view(), name='register'),
-    path('login/',    LoginView.as_view(),    name='login'),
-
     # Coffee CRUD
-    # path('coffee/',          CoffeeViewSet.as_view(), name='coffee-list'),
-    # path('coffee/<int:pk>/', CoffeeViewSet.as_view(), name='coffee-detail'),
     path('',          CoffeeViewSet.as_view(), name='coffee-list'),
     path('<int:pk>/', CoffeeViewSet.as_view(), name='coffee-detail'),
 

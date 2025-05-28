@@ -376,3 +376,4 @@ zope.interface @ file:///Users/builder/cbouss/perseverance-python-buildout/croot
 zstandard @ file:///private/var/folders/k1/30mswbxs7r1g6zwn8y4fyt500000gp/T/abs_cairdg5u3o/croot/zstandard_1728569200438/work
 dj-database-url==2.1.0
 whitenoise==6.6.0
+pyotp

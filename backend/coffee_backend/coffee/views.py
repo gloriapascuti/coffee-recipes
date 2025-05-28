@@ -183,6 +183,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models.coffee import Coffee, Origin
 from .models.uploads import UploadedFile
+from .models.coffee_operations import CoffeeOperation
 from .serializers import (
     CoffeeSerializer,
     OriginSerializer,
@@ -248,15 +249,27 @@ class LoginView(APIView):
 
 def log_user_operation(user, operation):
     try:
-        Operation.objects.create(user=user, operation=operation)
-        # Update users_operations in UserProfile
-        profile, _ = UserProfile.objects.get_or_create(user=user)
-        before = profile.users_operations
-        after = f"{before},{operation}" if before else operation
-        profile.users_operations = after
-        profile.save(update_fields=['users_operations'])
+        profile = user.userprofile
+        if profile.users_operations:
+            profile.users_operations += f",{operation}"
+        else:
+            profile.users_operations = operation
+        profile.save()
     except Exception as e:
         print("Failed to log user operation:", e)
+
+
+def log_coffee_operation(user, operation_type, coffee_id=None, coffee_name=None):
+    """Log coffee operations to the CoffeeOperation table"""
+    try:
+        CoffeeOperation.objects.create(
+            user=user,
+            operation_type=operation_type,
+            coffee_id=coffee_id,
+            coffee_name=coffee_name
+        )
+    except Exception as e:
+        print(f"Failed to log coffee operation: {e}")
 
 
 class CoffeeViewSet(APIView):
@@ -276,6 +289,10 @@ class CoffeeViewSet(APIView):
         serializer = CoffeeSerializer(data=request.data.copy(), context={'request': request})
         serializer.is_valid(raise_exception=True)
         coffee = serializer.save()
+        
+        # Log the operation
+        log_coffee_operation(request.user, 'add', coffee.id, coffee.name)
+        
         return Response(
             CoffeeSerializer(coffee, context={'request': request}).data,
             status=status.HTTP_201_CREATED
@@ -288,10 +305,20 @@ class CoffeeViewSet(APIView):
         serializer = CoffeeSerializer(coffee, data=data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         coffee = serializer.save()
+        
+        # Log the operation
+        log_coffee_operation(request.user, 'edit', coffee.id, coffee.name)
+        
         return Response(CoffeeSerializer(coffee, context={'request': request}).data)
 
     def delete(self, request, pk):
         coffee = get_object_or_404(Coffee, pk=pk)
+        coffee_name = coffee.name  # Store name before deletion
+        coffee_id = coffee.id
+        
+        # Log the operation before deletion
+        log_coffee_operation(request.user, 'delete', coffee_id, coffee_name)
+        
         coffee.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 

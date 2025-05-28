@@ -50,7 +50,8 @@ function Charts() {
 
     const nameToOriginRatioData = coffeeNames.map(name => {
         const countByName = coffees.filter(coffee => coffee.name === name).length;
-        const countByOrigin = coffees.filter(coffee => coffee.origin === coffees.find(coffee => coffee.name === name).origin).length;
+        const coffeeWithThisName = coffees.find(coffee => coffee.name === name);
+        const countByOrigin = coffees.filter(coffee => coffee.origin.name === coffeeWithThisName.origin.name).length;
         return (countByName / countByOrigin).toFixed(2);
     });
 

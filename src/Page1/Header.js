@@ -1,7 +1,7 @@
 import styles from './styles/Header.module.css'
 import React from "react";
 import { useCoffee } from '../CoffeeContext';
-import { useHistory } from 'react-router-dom';
+import { useHistory, Link } from 'react-router-dom';
 
 const Header = () => {
     const { user, logoutUser } = useCoffee();
@@ -23,9 +23,14 @@ const Header = () => {
                             <div className={styles.page}>Page 3</div>
                         </div>
                         {user && (
-                            <button onClick={handleLogout} className={styles.logoutButton}>
-                                Logout
-                            </button>
+                            <>
+                                <Link to="/settings" className={styles.settingsButton}>
+                                    Settings
+                                </Link>
+                                <button onClick={handleLogout} className={styles.logoutButton}>
+                                    Logout
+                                </button>
+                            </>
                         )}
                     </div>
                     <div className={styles.siteTitle}>Coffee-website</div>

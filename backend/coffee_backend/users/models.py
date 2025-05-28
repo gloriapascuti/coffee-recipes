@@ -7,6 +7,10 @@ class CustomUser(AbstractUser):
     address = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    totp_secret = models.CharField(max_length=100, blank=True, null=True)
+    twofa = models.BooleanField(default=False)
+    twofa_email = models.EmailField(blank=True, null=True)
+    is_special_admin = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']

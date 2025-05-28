@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "users",
     # "coffee",
     "rest_framework",
     "rest_framework_simplejwt",
@@ -47,7 +48,7 @@ INSTALLED_APPS = [
     'coffee.apps.CoffeeConfig',
 ]
 
-# AUTH_USER_MODEL = 'coffee.CustomUser'
+AUTH_USER_MODEL = 'users.CustomUser'
 
 
 REST_FRAMEWORK = {
