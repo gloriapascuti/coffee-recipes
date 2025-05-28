@@ -16,7 +16,7 @@
     border-radius: 8px;
     width: 415px; /* Reduce width */
     height: 208px; /* Reduce height */
-    background-image: url('/Users/filip/Documents/gloria/UBB/facultate/Anul II/semester2/coffee-website/src/images/griding.png');
+    background-image: url('/src/images/griding.png');
     background-size: contain; /* Ensures the whole image fits inside */
     background-repeat: no-repeat; /* Prevents repetition */
     background-position: center; /* Centers the image */
@@ -33,7 +33,7 @@
 .image2 {
     align-self: stretch;
     border-radius: 8px;
-    background-image: url('/Users/filip/Documents/gloria/UBB/facultate/Anul II/semester2/coffee-website/src/images/extraction.png');
+    background-image: url('/src/images/extraction.png');
     background-position: center;
     background-size: contain;
     background-repeat: no-repeat;
@@ -59,7 +59,7 @@
     border-radius: 8px;
     width: 319px; /* Reduce width */
     height: 210px; /* Reduce height */
-    background-image: url('/Users/filip/Documents/gloria/UBB/facultate/Anul II/semester2/coffee-website/src/images/New Coffee Flavors.jpeg');
+    background-image: url('/src/images/New Coffee Flavors.jpeg');
     background-size: contain; /* Ensures the whole image fits inside */
     background-repeat: no-repeat; /* Prevents repetition */
     background-position: center; /* Centers the image */
