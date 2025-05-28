@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: coffee-website
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: cd backend/coffee_backend && python manage.py migrate && gunicorn coffee_backend.wsgi:application
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.0
+      - key: SECRET_KEY
+        generateValue: true
+      - key: WEB_CONCURRENCY
+        value: 4
+      - key: ALLOWED_HOSTS
+        value: .onrender.com
+      - key: DATABASE_URL
+        fromDatabase:
+          name: coffee-db
+          property: connectionString
+
+databases:
+  - name: coffee-db
+    databaseName: coffee_db
+    user: coffee_user

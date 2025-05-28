@@ -24,7 +24,7 @@
     border-radius: 50%;
     height: 45px;
     object-fit: cover;
-    background-image: url("/Users/filip/Documents/gloria/UBB/facultate/Anul II/semester2/coffee-website/src/images/cappuccino.jpeg");
+    background-image: url("/src/images/cappuccino.jpeg");
     background-size: cover;
     background-repeat: no-repeat;
     /*background-position: top;*/

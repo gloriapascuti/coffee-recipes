@@ -3,7 +3,7 @@
     border-radius: 8px;
     width: 426px; /* Reduce width */
     height: 536px; /* Reduce height */
-    background-image: url('/Users/filip/Documents/gloria/UBB/facultate/Anul II/semester2/coffee-website/src/images/Icon1.png');
+    background-image: url('/src/images/Icon1.png');
     background-size: contain; /* Ensures the whole image fits inside */
     background-repeat: no-repeat; /* Prevents repetition */
     background-position: center; /* Centers the image */
@@ -14,7 +14,7 @@
     border-radius: 8px;
     width: 426px; /* Reduce width */
     height: 536px; /* Reduce height */
-    background-image: url('/Users/filip/Documents/gloria/UBB/facultate/Anul II/semester2/coffee-website/src/images/icon2.png');
+    background-image: url('/src/images/icon2.png');
     background-size: contain; /* Ensures the whole image fits inside */
     background-repeat: no-repeat; /* Prevents repetition */
     background-position: center; /* Centers the image */
@@ -25,7 +25,7 @@
     border-radius: 8px;
     width: 426px; /* Reduce width */
     height: 536px; /* Reduce height */
-    background-image: url('/Users/filip/Documents/gloria/UBB/facultate/Anul II/semester2/coffee-website/src/images/Icon3.png');
+    background-image: url('/src/images/Icon3.png');
     background-size: contain; /* Ensures the whole image fits inside */
     background-repeat: no-repeat; /* Prevents repetition */
     background-position: center;
