@@ -1,6 +1,5 @@
 from django.db import models
 from django.conf import settings
-from django.contrib.auth.models import User
 
 class Origin(models.Model):
     name = models.CharField(max_length=100)
@@ -12,7 +11,7 @@ class Coffee(models.Model):
     origin      = models.ForeignKey(Origin, related_name="coffees", on_delete=models.CASCADE)
     description = models.TextField()
     user        = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         related_name="coffees",
         on_delete=models.CASCADE,
         default=1    # existing coffees stay tied to the admin user
