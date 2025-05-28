@@ -1,33 +1,3 @@
-# from django.urls import path
-# from .views import (
-#     healthcheck,
-#     RegisterView, LoginView,
-#     CoffeeViewSets, OriginViewSet, FileUploadView,
-#     UserList,
-# )
-#
-# urlpatterns = [
-#     # auth
-#     path('auth/register/', RegisterView.as_view(), name='auth_register'),
-#     path('auth/login/',    LoginView.as_view(),    name='auth_login'),
-#
-#     # coffee CRUD
-#     path('coffee/',        CoffeeViewSets.as_view(),    name='coffee_list'),
-#     path('coffee/<int:pk>/', CoffeeViewSets.as_view(),  name='coffee_detail'),
-#
-#     # origins
-#     path('origins/',       OriginViewSet.as_view(),     name='origin_list'),
-#
-#     # file uploads
-#     path('upload/',        FileUploadView.as_view(),    name='file_upload'),
-#
-#     # admin-only user list
-#     path('users/',         UserList.as_view(),          name='user_list'),
-# ]
-
-# coffee/urls.py
-# coffee/urls.py
-
 from django.urls import path
 from .views import (
     healthcheck,
@@ -52,8 +22,10 @@ urlpatterns = [
     path('login/',    LoginView.as_view(),    name='login'),
 
     # Coffee CRUD
-    path('coffee/',          CoffeeViewSet.as_view(), name='coffee-list'),
-    path('coffee/<int:pk>/', CoffeeViewSet.as_view(), name='coffee-detail'),
+    # path('coffee/',          CoffeeViewSet.as_view(), name='coffee-list'),
+    # path('coffee/<int:pk>/', CoffeeViewSet.as_view(), name='coffee-detail'),
+    path('',          CoffeeViewSet.as_view(), name='coffee-list'),
+    path('<int:pk>/', CoffeeViewSet.as_view(), name='coffee-detail'),
 
     # Origins
     path('origins/', OriginView.as_view(), name='origins'),
