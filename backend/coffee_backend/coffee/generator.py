@@ -52,7 +52,7 @@ def generate_coffee():
             print(f"🔴 Failed to create coffee: {e}")
 
         # 4) wait before next one
-        time.sleep(100000)
+        time.sleep(10)
 
 def start_coffee_thread():
     thread = threading.Thread(

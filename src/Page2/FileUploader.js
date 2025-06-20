@@ -23,11 +23,11 @@ function FileUploader() {
         formData.append('file', file);
 
         try {
-            const token = localStorage.getItem('token');
+            const accessToken = localStorage.getItem('access_token');
             const response = await axios.post('http://127.0.0.1:8000/api/upload/', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
-                    ...(token ? { Authorization: `Token ${token}` } : {})
+                    ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
                 },
             });
             if (response.status === 201) {
@@ -44,10 +44,10 @@ function FileUploader() {
 
     async function fetchFiles() {
         try {
-            const token = localStorage.getItem('token');
+            const accessToken = localStorage.getItem('access_token');
             const response = await axios.get('http://127.0.0.1:8000/api/upload/', {
                 headers: {
-                    ...(token ? { Authorization: `Token ${token}` } : {})
+                    ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
                 }
             });
             if (response.data && response.data.files) {

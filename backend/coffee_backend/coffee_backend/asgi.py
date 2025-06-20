@@ -32,10 +32,8 @@ application = ProtocolTypeRouter({
     # HTTP requests are handled by Django
     "http": get_asgi_application(),
 
-    # WebSocket requests are handled by Channels
-    "websocket": AuthMiddlewareStack(
-        URLRouter(
-            websocket_urlpatterns
-        )
+    # WebSocket requests are handled by Channels (without auth middleware for now)
+    "websocket": URLRouter(
+        websocket_urlpatterns
     ),
 })
