@@ -10,7 +10,10 @@ from .views import (
     disable_2fa,
     get_2fa_status,
     LoginView,
-    admin_users_list
+    admin_users_list,
+    verify_user_activity,
+    ban_user,
+    get_user_notification_status
 )
 
 urlpatterns = [
@@ -25,4 +28,7 @@ urlpatterns = [
     path('2fa-status/', get_2fa_status, name='2fa-status'),
     path('login/', LoginView.as_view(), name='login'),
     path('admin/users/', admin_users_list, name='admin-users-list'),
+    path('admin/verify-user/<int:user_id>/', verify_user_activity, name='verify-user-activity'),
+    path('admin/ban-user/<int:user_id>/', ban_user, name='ban-user'),
+    path('notification-status/', get_user_notification_status, name='user-notification-status'),
 ] 

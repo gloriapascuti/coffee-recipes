@@ -11,16 +11,73 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('email', 'username', 'first_name', 'last_name', 'password', 'password2', 'phone_number', 'address')
+        extra_kwargs = {
+            'email': {'validators': []},  # Remove unique validation for email
+            'username': {'validators': []},  # Remove unique validation for username
+        }
 
     def validate(self, attrs):
         if attrs['password'] != attrs['password2']:
             raise serializers.ValidationError({"password": "Password fields didn't match."})
+        
+        # Check if user exists and is banned - allow re-registration
+        username = attrs.get('username')
+        email = attrs.get('email')
+        
+        try:
+            existing_user = User.objects.get(username=username)
+            if existing_user.is_banned:
+                # Allow re-registration for banned users
+                attrs['_reregistering_banned_user'] = existing_user
+            elif existing_user:
+                # User exists and is not banned - prevent registration
+                raise serializers.ValidationError({"username": "A user with that username already exists."})
+        except User.DoesNotExist:
+            pass  # User doesn't exist, proceed normally
+        
+        # Check email uniqueness too
+        try:
+            existing_user_email = User.objects.get(email=email)
+            if existing_user_email.is_banned:
+                # Allow re-registration for banned users with same email
+                if not attrs.get('_reregistering_banned_user'):
+                    attrs['_reregistering_banned_user'] = existing_user_email
+            elif existing_user_email:
+                # User exists and is not banned - prevent registration
+                raise serializers.ValidationError({"email": "A user with that email already exists."})
+        except User.DoesNotExist:
+            pass  # Email doesn't exist, proceed normally
+        
         return attrs
 
     def create(self, validated_data):
         validated_data.pop('password2')
-        user = User.objects.create_user(**validated_data)
-        return user
+        existing_banned_user = validated_data.pop('_reregistering_banned_user', None)
+        
+        if existing_banned_user:
+            # Re-register banned user - reset their data
+            existing_banned_user.is_banned = False
+            existing_banned_user.is_active = True
+            existing_banned_user.is_currently_suspicious = False
+            existing_banned_user.suspicious_activity_count = 0
+            existing_banned_user.last_suspicious_check_date = None
+            
+            # Clear all previous coffee operations to reset admin table data
+            existing_banned_user.coffee_operations.all().delete()
+            
+            # Update with new data
+            for field, value in validated_data.items():
+                if field == 'password':
+                    existing_banned_user.set_password(value)
+                else:
+                    setattr(existing_banned_user, field, value)
+            
+            existing_banned_user.save()
+            return existing_banned_user
+        else:
+            # Create new user normally
+            user = User.objects.create_user(**validated_data)
+            return user
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -38,7 +95,8 @@ class AdminUserSerializer(serializers.ModelSerializer):
         fields = ('id', 'email', 'username', 'first_name', 'last_name', 
                  'address', 'twofa', 'twofa_email', 'is_special_admin', 'is_2fa_enabled',
                  'is_active', 'is_staff', 'is_superuser', 'last_login', 'date_joined',
-                 'operations', 'is_suspicious')
+                 'operations', 'is_suspicious', 'suspicious_activity_count', 
+                 'is_currently_suspicious', 'is_banned', 'last_suspicious_check_date')
         read_only_fields = ('id',)
     
     def get_is_2fa_enabled(self, obj):
@@ -52,20 +110,23 @@ class AdminUserSerializer(serializers.ModelSerializer):
             return []
     
     def get_is_suspicious(self, obj):
-        """Check if user has more than 5 consecutive deletes"""
+        """Check if user is currently marked as suspicious or has suspicious activity pattern"""
+        # First check if already marked as suspicious
+        if obj.is_currently_suspicious:
+            return True
+            
+        # Also check the pattern of operations for display purposes
         try:
             recent_operations = obj.coffee_operations.all()[:10]  # Check last 10 operations
             consecutive_deletes = 0
-            max_consecutive_deletes = 0
             
             for operation in recent_operations:
                 if operation.operation_type == 'delete':
                     consecutive_deletes += 1
-                    max_consecutive_deletes = max(max_consecutive_deletes, consecutive_deletes)
                 else:
-                    consecutive_deletes = 0
+                    break  # Stop counting if we hit a non-delete operation
             
-            return max_consecutive_deletes > 5
+            return consecutive_deletes >= 5
         except:
             return False
 

@@ -11,9 +11,15 @@ class CustomUser(AbstractUser):
     twofa = models.BooleanField(default=False)
     twofa_email = models.EmailField(blank=True, null=True)
     is_special_admin = models.BooleanField(default=False)
+    
+    # Suspicious activity tracking fields
+    suspicious_activity_count = models.IntegerField(default=0)  # Count of times marked as suspicious
+    is_currently_suspicious = models.BooleanField(default=False)  # Currently under investigation
+    is_banned = models.BooleanField(default=False)  # User is banned
+    last_suspicious_check_date = models.DateTimeField(null=True, blank=True)  # Last time admin checked
 
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = ['email']
 
     def __str__(self):
         return self.email

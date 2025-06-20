@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Switch, Route, Redirect } from 'react-router-dom';
 import { CoffeeProvider } from './CoffeeContext';
 import StatusIndicator from './components/StatusIndicator';
+import UserNotification from './components/UserNotification';
 import Header from './Page1/Header';
 import Generalities from './Page1/Generalities';
 import CoffeeTypes from './Page1/CoffeeTypes';
@@ -50,7 +51,12 @@ function App() {
                             </>
                         )}
                     />
-                    <PrivateRoute path="/settings" component={UserSettings} />
+                    <PrivateRoute path="/settings" component={() => (
+                        <>
+                            <UserNotification />
+                            <UserSettings />
+                        </>
+                    )} />
                     <Redirect to="/" />
                 </Switch>
             </CoffeeProvider>

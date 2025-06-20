@@ -52,37 +52,23 @@ class UserDetailView(generics.RetrieveUpdateAPIView):
 @permission_classes([AllowAny])
 def login_view(request):
     """
-    Handles login - if 2FA is enabled, returns requires_2fa=True
-    If not, returns tokens immediately
+    Login with email/username and password, with optional 2FA
     """
+    email = request.data.get('email')
     username = request.data.get('username')
     password = request.data.get('password')
 
-    if not username or not password:
-        return Response({'error': 'Username and password are required'}, status=status.HTTP_400_BAD_REQUEST)
+    # Use email if provided, otherwise use username
+    login_field = email if email else username
 
-    # Try to find user by email first (since that's our USERNAME_FIELD)
-    user = None
-    try:
-        # First try to authenticate with the username as email
-        user = authenticate(request, username=username, password=password)
-        if not user:
-            # If that fails, try to find user by username and authenticate with their email
-            try:
-                user_obj = User.objects.get(username=username)
-                user = authenticate(request, username=user_obj.email, password=password)
-            except User.DoesNotExist:
-                # If that fails, try to find user by email directly
-                try:
-                    user_obj = User.objects.get(email=username)
-                    user = authenticate(request, username=user_obj.email, password=password)
-                except User.DoesNotExist:
-                    pass
-    except Exception:
-        pass
+    if not login_field or not password:
+        return Response({'error': 'Email/username and password are required'}, 
+                       status=status.HTTP_400_BAD_REQUEST)
 
-    if user is not None:
-        if user.twofa:  # Using new field name
+    # Authenticate user
+    user = authenticate(username=login_field, password=password)
+    if user:
+        if user.twofa and user.totp_secret:  # Using new field name
             # If 2FA is enabled, return a flag indicating this and don't issue tokens yet
             return Response({'requires_2fa': True, 'email': user.email})
         else:
@@ -101,6 +87,16 @@ def login_view(request):
                 'is_special_admin': user.is_special_admin
             })
     else:
+        # Check if it's a banned user trying to login
+        try:
+            potential_user = User.objects.get(username=login_field)
+            if potential_user.check_password(password) and potential_user.is_banned:
+                return Response({
+                    'error': 'Your account has been banned due to suspicious activity. Please re-register with the same credentials if you wish to continue.'
+                }, status=status.HTTP_403_FORBIDDEN)
+        except User.DoesNotExist:
+            pass
+        
         return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
 @api_view(['POST'])
@@ -239,9 +235,22 @@ class LoginView(APIView):
         password = serializer.validated_data['password']
         code = serializer.validated_data.get('code')
 
-        # Authenticate using the login field (email or username)
+        # Try to authenticate using the login field (email or username)
         user = authenticate(username=login_field, password=password)
+        
+        # If authentication fails, check if it's because the user is banned
         if not user:
+            try:
+                # Try to find the user manually to check if they're banned
+                potential_user = User.objects.get(username=login_field)
+                if potential_user.check_password(password) and potential_user.is_banned:
+                    return Response(
+                        {'error': 'Your account has been banned due to suspicious activity. Please re-register with the same credentials if you wish to continue.'},
+                        status=status.HTTP_403_FORBIDDEN
+                    )
+            except User.DoesNotExist:
+                pass
+            
             return Response(
                 {'error': 'Invalid credentials'},
                 status=status.HTTP_401_UNAUTHORIZED
@@ -282,3 +291,85 @@ def admin_users_list(request):
     users = User.objects.all()
     serializer = AdminUserSerializer(users, many=True)
     return Response(serializer.data)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def verify_user_activity(request, user_id):
+    """
+    Admin can verify a user's suspicious activity and mark it as not suspicious
+    The count increases by 1 and the user is not red anymore
+    """
+    if not request.user.is_special_admin:
+        return Response({'error': 'Permission denied. Special admin access required.'}, 
+                       status=status.HTTP_403_FORBIDDEN)
+    
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    # Increment the suspicious activity count by 1 and mark user as not suspicious anymore
+    user.suspicious_activity_count += 1
+    user.is_currently_suspicious = False
+    user.last_suspicious_check_date = timezone.now()
+    user.save(update_fields=['suspicious_activity_count', 'is_currently_suspicious', 'last_suspicious_check_date'])
+    
+    return Response({'message': 'User activity verified successfully'}, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def ban_user(request, user_id):
+    """
+    Admin can ban a user after 3 suspicious activity incidents
+    """
+    if not request.user.is_special_admin:
+        return Response({'error': 'Permission denied. Special admin access required.'}, 
+                       status=status.HTTP_403_FORBIDDEN)
+    
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    # Check if user has 3 or more suspicious activity counts
+    if user.suspicious_activity_count < 3:
+        return Response({'error': 'User must have 3 or more suspicious activity incidents to be banned'}, 
+                       status=status.HTTP_400_BAD_REQUEST)
+    
+    # Ban the user
+    user.is_banned = True
+    user.is_active = False  # Deactivate account
+    user.is_currently_suspicious = False  # Remove suspicious flag since they're banned
+    user.last_suspicious_check_date = timezone.now()
+    user.save(update_fields=['is_banned', 'is_active', 'is_currently_suspicious', 'last_suspicious_check_date'])
+    
+    return Response({'message': 'User has been banned successfully'}, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_notification_status(request):
+    """
+    Get the current user's notification status (if they're under investigation)
+    """
+    user = request.user
+    
+    if user.is_banned:
+        return Response({
+            'status': 'banned',
+            'message': 'Your account has been banned due to suspicious activity. Please re-register.'
+        })
+    elif user.suspicious_activity_count >= 3:
+        return Response({
+            'status': 'high_risk',
+            'message': 'You where under investigation too many times and can be banned any time, if you are banned you will be able to log in again, but all your account will be reset'
+        })
+    elif user.is_currently_suspicious:
+        return Response({
+            'status': 'under_investigation',
+            'message': 'Under investigation - noticed suspicious activity'
+        })
+    else:
+        return Response({
+            'status': 'normal',
+            'message': 'Account status is normal'
+        })
