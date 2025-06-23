@@ -1,86 +1,130 @@
-.imageIcon1 {
-    align-self: stretch;
-    border-radius: 8px;
-    width: 426px; /* Reduce width */
-    height: 536px; /* Reduce height */
-    background-image: url('/src/images/Icon1.png');
-    background-size: contain; /* Ensures the whole image fits inside */
-    background-repeat: no-repeat; /* Prevents repetition */
-    background-position: center; /* Centers the image */
+.container {
+    width: 100%;
+    background-color: white;
+    padding: 80px 50px;
+    font-family: Georgia, serif;
 }
 
-.imageIcon2 {
-    align-self: stretch;
-    border-radius: 8px;
-    width: 426px; /* Reduce width */
-    height: 536px; /* Reduce height */
-    background-image: url('/src/images/icon2.png');
-    background-size: contain; /* Ensures the whole image fits inside */
-    background-repeat: no-repeat; /* Prevents repetition */
-    background-position: center; /* Centers the image */
-}
-
-.imageIcon3 {
-    align-self: stretch;
-    border-radius: 8px;
-    width: 426px; /* Reduce width */
-    height: 536px; /* Reduce height */
-    background-image: url('/src/images/Icon3.png');
-    background-size: contain; /* Ensures the whole image fits inside */
-    background-repeat: no-repeat; /* Prevents repetition */
-    background-position: center;
-}
-
-.subheading {
-    align-self: stretch;
-    position: relative;
-    line-height: 150%;
-    font-weight: 500;
-    font-family: Georgia;
-}
-.bodyTextFor {
-    align-self: stretch;
-    position: relative;
-    line-height: 150%;
-    color: #828282;
-    font-family: Georgia;
-}
-.copy {
-    width: 381px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: center;
-    gap: 4px;
-}
-
-.container_image1 {
-    position: relative;
-    float: left;
-    margin-left: 50px;
-    bottom: auto;
-}
-.container_image2 {
-    position: relative;
-    bottom: auto;
-}
-
-.container_image3 {
-    position: relative;
-    float: right;
-    margin-right: 50px;
-    buttom: auto;
+.content {
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 .Title {
-    left: 80px;
-    top: -60px;
-    width: 100%;
-    position: relative;
     font-size: 48px;
     letter-spacing: -0.02em;
-    display: inline-block;
-    font-family: Georgia;
+    font-family: Georgia, serif;
     color: #000;
-    text-align: left;
+    text-align: center;
+    margin-bottom: 60px;
+    font-weight: normal;
+}
+
+.coffeeTypesGrid {
+    display: flex;
+    gap: 40px;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.coffeeTypeCard {
+    flex: 1;
+    max-width: 400px;
+    background: linear-gradient(135deg, #f8f8f8, #e8e8e8);
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-align: center;
+    border-top: 4px solid #8B4513;
+}
+
+.coffeeTypeCard:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+}
+
+.imageIcon1,
+.imageIcon2,
+.imageIcon3 {
+    width: 100%;
+    height: 320px;
+    border-radius: 15px;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    margin-bottom: 25px;
+    transition: transform 0.3s ease;
+}
+
+.imageIcon1 {
+    background-image: url('/src/images/Icon1.png');
+}
+
+.imageIcon2 {
+    background-image: url('/src/images/icon2.png');
+}
+
+.imageIcon3 {
+    background-image: url('/src/images/Icon3.png');
+}
+
+.coffeeTypeCard:hover .imageIcon1,
+.coffeeTypeCard:hover .imageIcon2,
+.coffeeTypeCard:hover .imageIcon3 {
+    transform: scale(1.05);
+}
+
+.subheading {
+    font-size: 24px;
+    line-height: 1.4;
+    font-weight: 600;
+    font-family: Georgia, serif;
+    color: #8B4513;
+    margin-bottom: 15px;
+}
+
+.bodyTextFor {
+    font-size: 16px;
+    line-height: 1.6;
+    color: #555;
+    font-family: Georgia, serif;
+    font-weight: 400;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        padding: 50px 20px;
+    }
+    
+    .coffeeTypesGrid {
+        flex-direction: column;
+        gap: 30px;
+        align-items: center;
+    }
+    
+    .coffeeTypeCard {
+        max-width: 100%;
+        width: 100%;
+    }
+    
+    .Title {
+        font-size: 36px;
+        margin-bottom: 40px;
+    }
+    
+    .imageIcon1,
+    .imageIcon2,
+    .imageIcon3 {
+        height: 220px;
+    }
+    
+    .subheading {
+        font-size: 20px;
+    }
+    
+    .bodyTextFor {
+        font-size: 14px;
+    }
 }

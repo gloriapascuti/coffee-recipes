@@ -170,6 +170,7 @@ from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.db import models
 
 from rest_framework import status
 from rest_framework.views import APIView
@@ -181,7 +182,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models.coffee import Coffee, Origin
+from .models.coffee import Coffee, Origin, Like
 from .models.uploads import UploadedFile
 from .models.coffee_operations import CoffeeOperation
 from .serializers import (
@@ -344,8 +345,45 @@ class FileUploadView(APIView):
 
     def get(self, request):
         folder = os.path.join(settings.MEDIA_ROOT, 'uploads')
+        if not os.path.exists(folder):
+            os.makedirs(folder)
         files = os.listdir(folder)
         return Response({"files": files})
+
+    def delete(self, request, filename=None):
+        if not filename:
+            return Response(
+                {"error": "Filename is required"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        file_path = os.path.join(settings.MEDIA_ROOT, 'uploads', filename)
+        
+        if not os.path.exists(file_path):
+            return Response(
+                {"error": "File not found"}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        try:
+            os.remove(file_path)
+            
+            # Also remove from database if it exists
+            try:
+                uploaded_file = UploadedFile.objects.get(file__endswith=filename)
+                uploaded_file.delete()
+            except UploadedFile.DoesNotExist:
+                pass  # File might not be in database, but that's okay
+            
+            return Response(
+                {"message": f"File '{filename}' deleted successfully"}, 
+                status=status.HTTP_200_OK
+            )
+        except Exception as e:
+            return Response(
+                {"error": f"Failed to delete file: {str(e)}"}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class UserList(APIView):
@@ -483,3 +521,56 @@ def generate_ai_recipe(request):
             {'error': f'Failed to generate recipe: {str(e)}'}, 
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def toggle_like(request, coffee_id):
+    """Toggle like/unlike for a coffee recipe"""
+    try:
+        coffee = Coffee.objects.get(id=coffee_id)
+    except Coffee.DoesNotExist:
+        return Response({'error': 'Coffee not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    like, created = Like.objects.get_or_create(user=request.user, coffee=coffee)
+    
+    if not created:
+        # Like already exists, so unlike it
+        like.delete()
+        liked = False
+    else:
+        # New like created
+        liked = True
+    
+    return Response({
+        'liked': liked,
+        'likes_count': coffee.likes_count
+    }, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def most_popular_recipes(request):
+    """Get the 3 most liked coffee recipes"""
+    # Get top 3 coffees by likes count, with a minimum of 1 like
+    popular_coffees = Coffee.objects.annotate(
+        total_likes=models.Count('likes')
+    ).filter(
+        total_likes__gt=0
+    ).order_by('-total_likes')[:3]
+    
+    # If we don't have 3 liked recipes, fill with most recent recipes
+    if len(popular_coffees) < 3:
+        remaining_count = 3 - len(popular_coffees)
+        popular_ids = [coffee.id for coffee in popular_coffees]
+        
+        # Get most recent recipes that aren't already in popular list
+        recent_coffees = Coffee.objects.exclude(
+            id__in=popular_ids
+        ).order_by('-id')[:remaining_count]
+        
+        # Combine popular and recent
+        popular_coffees = list(popular_coffees) + list(recent_coffees)
+    
+    serializer = CoffeeSerializer(popular_coffees, many=True, context={'request': request})
+    return Response(serializer.data)

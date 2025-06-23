@@ -17,5 +17,28 @@ class Coffee(models.Model):
         default=1    # existing coffees stay tied to the admin user
     )
 
+    @property
+    def likes_count(self):
+        return self.likes.count()
+
     def __str__(self):
         return self.name
+
+class Like(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="likes"
+    )
+    coffee = models.ForeignKey(
+        Coffee,
+        on_delete=models.CASCADE,
+        related_name="likes"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'coffee')  # Prevent duplicate likes
+
+    def __str__(self):
+        return f"{self.user.username} likes {self.coffee.name}"

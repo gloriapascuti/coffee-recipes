@@ -10,6 +10,8 @@ from .views import (
     debug_all_operations,
     log_operation,
     generate_ai_recipe,
+    toggle_like,
+    most_popular_recipes,
 )
 
 urlpatterns = [
@@ -25,6 +27,7 @@ urlpatterns = [
 
     # File uploads
     path('upload/', FileUploadView.as_view(), name='file-upload'),
+    path('upload/<str:filename>/', FileUploadView.as_view(), name='file-delete'),
     path('files/',  FileUploadView.as_view(), name='file-list'),
 
     # User listing (admin only)
@@ -44,4 +47,10 @@ urlpatterns = [
     
     # AI recipe generation
     path('generate-ai-recipe/', generate_ai_recipe, name='generate-ai-recipe'),
+    
+    # Like system
+    path('like/<int:coffee_id>/', toggle_like, name='toggle-like'),
+    
+    # Most popular recipes
+    path('most-popular/', most_popular_recipes, name='most-popular-recipes'),
 ]

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models.user import User
-from .models.coffee import Coffee, Origin
+from .models.coffee import Coffee, Origin, Like
 from .models.uploads import UploadedFile
 from .models.operations import Operation
 from django.contrib.auth.hashers import check_password
@@ -16,10 +16,18 @@ class OriginSerializer(serializers.ModelSerializer):
 class CoffeeSerializer(serializers.ModelSerializer):
     origin = OriginSerializer()
     user = serializers.PrimaryKeyRelatedField(read_only=True)
+    likes_count = serializers.ReadOnlyField()
+    is_liked = serializers.SerializerMethodField()
 
     class Meta:
         model  = Coffee
-        fields = ['id', 'name', 'origin', 'description', 'user']
+        fields = ['id', 'name', 'origin', 'description', 'user', 'likes_count', 'is_liked']
+
+    def get_is_liked(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return obj.likes.filter(user=request.user).exists()
+        return False
 
     def create(self, validated_data):
         origin_data = validated_data.pop('origin')

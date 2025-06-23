@@ -1,95 +1,159 @@
-.topic {
-    align-self: stretch;
-    position: relative;
-    line-height: 150%;
-    font-weight: 500;
-    color: #000;
-    font-family: Georgia;
-}
-.page {
-    align-self: stretch;
-    position: relative;
-    line-height: 150%;
-    font-weight: 500;
-    font-family: Georgia;
-}
-.items {
-    position: absolute;
-    top: 48px;
-    right: 517px;
-    width: 187px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    justify-content: center;
-    gap: 24px;
-}
-.items1 {
-    position: absolute;
-    top: 48px;
-    right: 298px;
-    width: 187px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    justify-content: center;
-    gap: 24px;
-}
-.items2 {
-    position: absolute;
-    top: 48px;
-    right: 80px;
-    width: 187px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    justify-content: center;
-    gap: 24px;
-}
-.siteName {
-    position: absolute;
-    top: 52px;
-    left: 80px;
-    font-size: 24px;
-    line-height: 150%;
-    color: #000;
-    font-family: Georgia;
-}
-.buttonsIcon {
-    width: 40px;
-    position: relative;
-    border-radius: 4px;
-    height: 40px;
-    object-fit: cover;
-}
-.socialIcons {
-    position: absolute;
-    top: 176px;
-    left: 80px;
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start;
-    justify-content: flex-start;
-    gap: 8px;
-}
-.divider {
-    position: absolute;
-    top: 0.5px;
-    left: 79.5px;
-    border-top: 1px solid #e6e6e6;
-    box-sizing: border-box;
-    width: 1281px;
-    height: 1px;
-}
 .navigationFooter {
     width: 100%;
-    position: relative;
-    background-color: #fff;
-    height: 264px;
-    overflow: hidden;
-    text-align: left;
+    background-color: #f8f9fa;
+    padding: 60px 50px 40px;
+    font-family: Georgia, serif;
+    border-top: 1px solid #e6e6e6;
+    margin-top: 40px;
+}
+
+.footerContent {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 50px;
+}
+
+.siteName {
+    font-size: 28px;
+    line-height: 1.4;
+    color: #8B4513;
+    font-family: Georgia, serif;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+.leftSection {
+    flex: 1;
+    max-width: 300px;
+}
+
+.rightSection {
+    display: flex;
+    gap: 80px;
+    flex: 2;
+    justify-content: flex-end;
+}
+
+.footerColumn {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    min-width: 150px;
+}
+
+.topic {
+    font-size: 18px;
+    line-height: 1.4;
+    font-weight: 600;
+    color: #8B4513;
+    font-family: Georgia, serif;
+    margin-bottom: 5px;
+}
+
+.page {
     font-size: 16px;
-    color: #454545;
-    font-family: Georgia;
+    line-height: 1.5;
+    font-weight: 400;
+    color: #555;
+    font-family: Georgia, serif;
+    transition: color 0.3s ease;
+    cursor: pointer;
+}
+
+.page:hover {
+    color: #8B4513;
+}
+
+.socialIcons {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.socialIcon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #8B4513;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 18px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.socialIcon:hover {
+    background-color: #A0522D;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(139, 69, 19, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .navigationFooter {
+        padding: 40px 20px 30px;
+    }
+    
+    .footerContent {
+        flex-direction: column;
+        gap: 30px;
+    }
+    
+    .rightSection {
+        gap: 40px;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+    
+    .siteName {
+        font-size: 24px;
+        text-align: center;
+    }
+    
+    .leftSection {
+        max-width: 100%;
+        text-align: center;
+    }
+    
+    .footerColumn {
+        min-width: 120px;
+    }
+    
+    .topic {
+        font-size: 16px;
+    }
+    
+    .page {
+        font-size: 14px;
+    }
+    
+    .socialIcons {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .navigationFooter {
+        padding: 30px 15px 20px;
+    }
+    
+    .rightSection {
+        gap: 20px;
+    }
+    
+    .siteName {
+        font-size: 20px;
+    }
+    
+    .socialIcon {
+        width: 35px;
+        height: 35px;
+        font-size: 16px;
+    }
 }
 

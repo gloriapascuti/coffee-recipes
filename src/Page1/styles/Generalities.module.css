@@ -1,28 +1,75 @@
+.container {
+    width: 100%;
+    background-color: #f8f9fa;
+    padding: 80px 50px;
+    font-family: Georgia, serif;
+}
+
+.content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    gap: 50px;
+    align-items: center;
+}
+
 .image {
-    width: 626px;
-    top: 250px;
-    position: relative;
-    height: 782px;
+    width: 520px;
+    height: 600px;
     background-image: url('/src/images/V60 Manual Pour Over Coffee.jpeg');
     background-size: cover;
     background-repeat: no-repeat;
-    background-position: top;
-    margin-bottom: 50px;
-    margin-left: 100px;
-    float: left;
+    background-position: center;
+    border-radius: 15px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease;
+}
+
+.image:hover {
+    transform: scale(1.02);
+}
+
+.textContent {
+    flex: 1;
+    background: linear-gradient(135deg, #f8f8f8, #e8e8e8);
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    border-left: 5px solid #8B4513;
 }
 
 .talkAboutSpeciality {
-    width: 631px;
-    position: relative;
-    font-size: 22px;
-    line-height: 150%;
-    font-weight: 500;
-    font-family: Georgia;
-    color: #000;
-    text-align: left;
-    display: flex;
-    align-items: center;
-    height: 1250px;
+    font-size: 18px;
+    line-height: 1.6;
+    font-weight: 400;
+    font-family: Georgia, serif;
+    color: #333;
+    text-align: justify;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        padding: 50px 20px;
+    }
+    
+    .content {
+        flex-direction: column;
+        gap: 30px;
+    }
+    
+    .image {
+        width: 100%;
+        max-width: 400px;
+        height: 300px;
+    }
+    
+    .textContent {
+        padding: 25px;
+    }
+    
+    .talkAboutSpeciality {
+        font-size: 16px;
+    }
 }
 

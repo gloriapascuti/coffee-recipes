@@ -16,9 +16,6 @@ export default function RUD() {
         coffees,
         userId,
         setCoffees,    // for websocket updates
-        addCoffee,
-        editCoffee,
-        deleteCoffee
     } = useContext(CoffeeContext);
 
     // toggle for "only mine"
@@ -28,15 +25,6 @@ export default function RUD() {
     const [input, setInput]             = useState("");
     const [selectedOrigin, setSelectedOrigin] = useState("");
     const [filteredCoffee, setFilteredCoffee] = useState([]);
-
-    // edit state
-    const [editingCoffee, setEditingCoffee] = useState(null);
-    const [editInput, setEditInput] = useState({
-        id: null,
-        name: "",
-        origin: "",
-        description: ""
-    });
 
     // sort
     const [isAscending, setIsAscending] = useState(true);
@@ -93,22 +81,6 @@ export default function RUD() {
             : b.name.localeCompare(a.name)
     );
 
-    // 5) CRUD handlers
-    const handleDelete = id => deleteCoffee(id);
-    const handleEdit   = coffee => {
-        setEditingCoffee(coffee.id);
-        setEditInput({
-            id: coffee.id,
-            name: coffee.name,
-            origin: coffee.origin.name,
-            description: coffee.description
-        });
-    };
-    const handleSaveEdit = () => {
-        editCoffee(editInput.id, editInput);
-        setEditingCoffee(null);
-    };
-
     return (
         <div>
             <Charts />
@@ -145,12 +117,6 @@ export default function RUD() {
                     <InfiniteScroll
                         data={sorted}
                         loading={false}
-                        handleDelete={handleDelete}
-                        handleEdit={handleEdit}
-                        handleSaveEdit={handleSaveEdit}
-                        editingCoffee={editingCoffee}
-                        editInput={editInput}
-                        setEditInput={setEditInput}
                         getBackgroundColor={getBackgroundColor}
                     />
                 </ul>

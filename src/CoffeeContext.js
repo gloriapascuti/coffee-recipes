@@ -211,6 +211,7 @@ export const CoffeeProvider = ({ children }) => {
     const [isOfflineMode, setIsOfflineMode] = useState(false);
     const [isSyncing, setIsSyncing]         = useState(false);
     const [pendingOperations, setPendingOperations] = useState([]);
+    const [favorites, setFavorites] = useState([]);
 
     // read & expose current user ID
     const userId = Number(localStorage.getItem("user_id") || -1);
@@ -590,6 +591,39 @@ export const CoffeeProvider = ({ children }) => {
         }
     }
 
+    // Load favorites from localStorage on mount
+    useEffect(() => {
+        const storedFavorites = localStorage.getItem(`favorites_${userId}`);
+        if (storedFavorites) {
+            setFavorites(JSON.parse(storedFavorites));
+        }
+    }, [userId]);
+
+    // Save favorites to localStorage whenever favorites change
+    useEffect(() => {
+        if (userId && favorites.length >= 0) {
+            localStorage.setItem(`favorites_${userId}`, JSON.stringify(favorites));
+        }
+    }, [favorites, userId]);
+
+    // Add to favorites
+    const addToFavorites = (coffee) => {
+        const isAlreadyFavorite = favorites.some(fav => fav.id === coffee.id);
+        if (!isAlreadyFavorite) {
+            setFavorites(prev => [...prev, coffee]);
+        }
+    };
+
+    // Remove from favorites
+    const removeFromFavorites = (coffeeId) => {
+        setFavorites(prev => prev.filter(fav => fav.id !== coffeeId));
+    };
+
+    // Check if coffee is favorite
+    const isFavorite = (coffeeId) => {
+        return favorites.some(fav => fav.id === coffeeId);
+    };
+
     return (
         <CoffeeContext.Provider value={{
             coffees,
@@ -608,6 +642,10 @@ export const CoffeeProvider = ({ children }) => {
             accessToken,
             authenticatedFetch,
             verify2FALogin,
+            favorites,
+            addToFavorites,
+            removeFromFavorites,
+            isFavorite,
         }}>
             {children}
         </CoffeeContext.Provider>

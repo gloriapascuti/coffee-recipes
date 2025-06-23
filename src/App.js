@@ -9,11 +9,11 @@ import CoffeeTypes from './Page1/CoffeeTypes';
 import AddCoffee from './Page1/AddCoffee';
 import GrindingBeans from './Page1/GrindingBeans';
 import Cards from './Page1/Cards';
-import ViewSection from './Page1/ViewSection';
+import BrewingAndSyrups from './Page1/BrewingAndSyrups';
+
 import RUD from './Page2/RUD';
 import FileUploader from './Page2/FileUploader';
-import CoffeeDifferences from './Page2/CoffeeDifferences';
-import Syrup from './Page2/Syrup';
+
 import NavigationFooter from './Page1/NavigationFooter';
 import EntryPage from './authentication/EntryPage';
 import Login from './authentication/Login';
@@ -47,7 +47,7 @@ function App() {
                                 <AddCoffee/>
                                 <GrindingBeans/>
                                 <Cards/>
-                                <ViewSection/>
+                                <BrewingAndSyrups/>
                                 <NavigationFooter/>
                             </>
                         )}
@@ -61,8 +61,6 @@ function App() {
                                 <Header/>
                                 <RUD/>
                                 <FileUploader/>
-                                <CoffeeDifferences/>
-                                <Syrup/>
                                 <NavigationFooter/>
                             </>
                         )}

@@ -1,93 +1,136 @@
-.Title {
-    font-family: Georgia;
-    font-size: 48px;
-    left: 80px;
-    position: relative;
+.container {
     width: 100%;
-    text-align: left;
+    background-color: #f8f9fa;
+    padding: 80px 50px;
+    font-family: Georgia, serif;
+}
+
+.content {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.Title {
+    font-size: 48px;
     letter-spacing: -0.02em;
-    display: inline-block;
-    margin-bottom: 30px;
-    margin-top: 50px;
+    font-family: Georgia, serif;
+    color: #000;
+    text-align: center;
+    margin-bottom: 60px;
+    font-weight: normal;
+}
+
+.grindingGrid {
+    display: flex;
+    gap: 40px;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.grindingCard {
+    flex: 1;
+    max-width: 400px;
+    background: linear-gradient(135deg, #f8f8f8, #e8e8e8);
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-align: center;
+    border-top: 4px solid #8B4513;
+}
+
+.grindingCard:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+}
+
+.image1,
+.image2,
+.image3 {
+    width: 100%;
+    height: 260px;
+    border-radius: 15px;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    margin-bottom: 25px;
+    transition: transform 0.3s ease;
 }
 
 .image1 {
-    align-self: stretch;
-    border-radius: 8px;
-    width: 415px; /* Reduce width */
-    height: 208px; /* Reduce height */
     background-image: url('/src/images/griding.png');
-    background-size: contain; /* Ensures the whole image fits inside */
-    background-repeat: no-repeat; /* Prevents repetition */
-    background-position: center; /* Centers the image */
-}
-
-.container_image1 {
-    position: relative;
-    float: left;
-    margin-left: 80px;
-    bottom: auto;
-    margin-bottom: 30px;
 }
 
 .image2 {
-    align-self: stretch;
-    border-radius: 8px;
     background-image: url('/src/images/extraction.png');
-    background-position: center;
-    background-size: contain;
-    background-repeat: no-repeat;
-    width: 221px;
-    height: 212px;
-}
-
-.container_image2 {
-    position: relative;
-    float: right;
-    margin-bottom: 30px;
-}
-
-.container_image3 {
-    position: relative;
-    float: right;
-    margin-right: 100px;
-    margin-bottom: 30px;
 }
 
 .image3 {
-    align-self: stretch;
-    border-radius: 8px;
-    width: 319px; /* Reduce width */
-    height: 210px; /* Reduce height */
     background-image: url('/src/images/New Coffee Flavors.jpeg');
-    background-size: contain; /* Ensures the whole image fits inside */
-    background-repeat: no-repeat; /* Prevents repetition */
-    background-position: center; /* Centers the image */
+}
+
+.grindingCard:hover .image1,
+.grindingCard:hover .image2,
+.grindingCard:hover .image3 {
+    transform: scale(1.05);
 }
 
 .subheading {
-    text-align: left;
-    align-self: stretch;
-    position: relative;
-    line-height: 150%;
-    font-weight: 500;
-    font-size: 20px;
-    font-family: Georgia;
+    font-size: 22px;
+    line-height: 1.4;
+    font-weight: 600;
+    font-family: Georgia, serif;
+    color: #8B4513;
+    margin-bottom: 15px;
 }
 
 .bodyTextFor {
+    font-size: 15px;
+    line-height: 1.6;
+    color: #555;
+    font-family: Georgia, serif;
+    font-weight: 400;
     text-align: left;
-    /*align-self: stretch;*/
-    position: relative;
-    line-height: 150%;
-    color: #828282;
-    font-family: Georgia;
-    font-size: 16px;
-    display: flex;
-    align-items: center;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        padding: 50px 20px;
+    }
+    
+    .grindingGrid {
+        flex-direction: column;
+        gap: 30px;
+        align-items: center;
+    }
+    
+    .grindingCard {
+        max-width: 100%;
+        width: 100%;
+    }
+    
+    .Title {
+        font-size: 36px;
+        margin-bottom: 40px;
+    }
+    
+    .image1,
+    .image2,
+    .image3 {
+        height: 180px;
+    }
+    
+    .subheading {
+        font-size: 18px;
+    }
+    
+    .bodyTextFor {
+        font-size: 14px;
+    }
 }
 
 /*Each coffee particle has an amount of extratactable mass (the taste) locked inside a tight cellulose structure
-(the ‘wood’ of the seed). As you soak it in hot water, the structure softens and the water extracts the taste.
+(the 'wood' of the seed). As you soak it in hot water, the structure softens and the water extracts the taste.
 However, this takes time. The larger the particle, the longer it takes to extract the taste near the middle.
 To add to this, different taste compounds also extract at differing rates.*/
