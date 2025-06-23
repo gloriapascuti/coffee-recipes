@@ -9,6 +9,7 @@ from .views import (
     debug_users_and_operations,
     debug_all_operations,
     log_operation,
+    generate_ai_recipe,
 )
 
 urlpatterns = [
@@ -40,4 +41,7 @@ urlpatterns = [
 
     # Log operation
     path('log-operation/', log_operation),
+    
+    # AI recipe generation
+    path('generate-ai-recipe/', generate_ai_recipe, name='generate-ai-recipe'),
 ]

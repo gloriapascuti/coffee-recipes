@@ -59,3 +59,55 @@ export const logout = () => {
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user_id');
 };
+
+export const getProfile = async () => {
+  try {
+    const token = localStorage.getItem('access_token');
+    
+    const response = await fetch(`${API_URL}/users/profile/`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Failed to fetch profile');
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching profile:', error);
+    throw error;
+  }
+};
+
+export const updateProfile = async (profileData) => {
+  try {
+    const token = localStorage.getItem('access_token');
+    const response = await fetch(`${API_URL}/users/profile/`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(profileData),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      // Throw the actual error data for validation errors
+      const error = new Error('Failed to update profile');
+      error.validationErrors = data;
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    throw error;
+  }
+};

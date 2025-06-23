@@ -407,3 +407,79 @@ def log_operation(request):
         return Response({'detail': 'Operation type required.'}, status=status.HTTP_400_BAD_REQUEST)
     Operation.objects.create(user=user, operation=operation)
     return Response({'detail': 'Operation logged.'}, status=status.HTTP_201_CREATED)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def generate_ai_recipe(request):
+    """Generate a coffee recipe using AI based on user attributes"""
+    attributes = request.data.get('attributes', '')
+    
+    if not attributes:
+        return Response(
+            {'error': 'Attributes are required'}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    # Create a prompt for the AI
+    prompt = f"Give me a coffee recipe with Name, Origin and Description using these attributes: {attributes}"
+    
+    try:
+        # For now, we'll create a simple mock response
+        # In production, you would integrate with an actual AI service like OpenAI, Claude, or DeepSeek
+        # 
+        # Example integration with OpenAI:
+        # import openai
+        # openai.api_key = "your-api-key"
+        # response = openai.ChatCompletion.create(
+        #     model="gpt-3.5-turbo",
+        #     messages=[{"role": "user", "content": prompt}]
+        # )
+        # ai_generated_recipe = response.choices[0].message.content
+        #
+        # Example integration with DeepSeek:
+        # import requests
+        # headers = {
+        #     'Authorization': f'Bearer {your_deepseek_api_key}',
+        #     'Content-Type': 'application/json'
+        # }
+        # data = {
+        #     'model': 'deepseek-chat',
+        #     'messages': [{'role': 'user', 'content': prompt}]
+        # }
+        # response = requests.post('https://api.deepseek.com/v1/chat/completions', 
+        #                         headers=headers, json=data)
+        # ai_generated_recipe = response.json()['choices'][0]['message']['content']
+        #
+        # Example integration with Claude (Anthropic):
+        # import anthropic
+        # client = anthropic.Anthropic(api_key="your-api-key")
+        # message = client.messages.create(
+        #     model="claude-3-sonnet-20240229",
+        #     max_tokens=1000,
+        #     messages=[{"role": "user", "content": prompt}]
+        # )
+        # ai_generated_recipe = message.content[0].text
+        
+        # Generate a simple response matching the requested format
+        attributes_list = [attr.strip() for attr in attributes.split(',')]
+        
+        # Create a mock response in the format: Name, Origin, Description
+        mock_recipe = f"""
+**Name:** Custom {', '.join(attributes_list).title()} Blend
+
+**Origin:** Ethiopian Highlands (Yirgacheffe region)
+
+**Description:** A carefully crafted coffee that embodies {attributes} characteristics. This exceptional blend delivers a complex flavor profile featuring {', '.join(attributes_list)} notes, creating a memorable coffee experience. The beans are sourced from high-altitude farms and expertly roasted to highlight the unique {attributes} qualities you requested.
+        """
+        
+        return Response({
+            'recipe': mock_recipe,
+            'attributes_used': attributes
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return Response(
+            {'error': f'Failed to generate recipe: {str(e)}'}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )

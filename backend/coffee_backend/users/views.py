@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model, authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import (
     UserRegistrationSerializer, UserSerializer, TwoFactorSetupSerializer,
-    TwoFactorVerifySerializer, LoginSerializer, AdminUserSerializer
+    TwoFactorVerifySerializer, LoginSerializer, AdminUserSerializer, ProfileSerializer
 )
 import pyotp
 import qrcode
@@ -47,6 +47,25 @@ class UserDetailView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user
+
+class ProfileView(generics.RetrieveUpdateAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = ProfileSerializer
+
+    def get_object(self):
+        return self.request.user
+    
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        
+        return Response({
+            'message': 'Profile updated successfully',
+            'user': serializer.data
+        })
 
 @api_view(['POST'])
 @permission_classes([AllowAny])

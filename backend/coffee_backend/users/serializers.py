@@ -85,6 +85,95 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('id', 'email', 'username', 'phone_number', 'address', 'twofa', 'twofa_email', 'is_special_admin')
         read_only_fields = ('id',)
 
+class ProfileSerializer(serializers.ModelSerializer):
+    current_password = serializers.CharField(write_only=True, required=False)
+    new_password = serializers.CharField(write_only=True, required=False, validators=[validate_password])
+    new_password_confirm = serializers.CharField(write_only=True, required=False)
+    is_profile_complete = serializers.SerializerMethodField()
+    missing_fields = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'email', 'first_name', 'last_name', 'phone_number', 'address', 
+                 'current_password', 'new_password', 'new_password_confirm', 'date_joined', 'last_login',
+                 'is_profile_complete', 'missing_fields')
+        read_only_fields = ('id', 'email', 'date_joined', 'last_login', 'is_profile_complete', 'missing_fields')
+        
+    def get_is_profile_complete(self, obj):
+        """Check if all required profile fields are filled"""
+        required_fields = ['first_name', 'last_name', 'username', 'phone_number', 'address']
+        for field in required_fields:
+            value = getattr(obj, field, None)
+            if not value or (isinstance(value, str) and not value.strip()):
+                return False
+        return True
+    
+    def get_missing_fields(self, obj):
+        """Get list of missing required profile fields"""
+        required_fields = {
+            'first_name': 'First Name',
+            'last_name': 'Last Name', 
+            'username': 'Username',
+            'phone_number': 'Phone Number',
+            'address': 'Address'
+        }
+        missing = []
+        for field, display_name in required_fields.items():
+            value = getattr(obj, field, None)
+            if not value or (isinstance(value, str) and not value.strip()):
+                missing.append(display_name)
+        return missing
+        
+    def validate(self, attrs):
+        current_password = attrs.get('current_password')
+        new_password = attrs.get('new_password')
+        new_password_confirm = attrs.get('new_password_confirm')
+        
+        # If any password field is provided, all must be provided
+        if any([current_password, new_password, new_password_confirm]):
+            if not all([current_password, new_password, new_password_confirm]):
+                raise serializers.ValidationError({
+                    "password": "To change password, you must provide current password, new password, and confirm new password."
+                })
+            
+            # Verify current password
+            if not self.instance.check_password(current_password):
+                raise serializers.ValidationError({
+                    "current_password": "Current password is incorrect."
+                })
+            
+            # Check if new passwords match
+            if new_password != new_password_confirm:
+                raise serializers.ValidationError({
+                    "new_password": "New password and confirmation don't match."
+                })
+        
+        # Check username uniqueness if being changed
+        username = attrs.get('username')
+        if username and username != self.instance.username:
+            if User.objects.filter(username=username).exists():
+                raise serializers.ValidationError({
+                    "username": "A user with that username already exists."
+                })
+        
+        return attrs
+    
+    def update(self, instance, validated_data):
+        # Handle password change
+        current_password = validated_data.pop('current_password', None)
+        new_password = validated_data.pop('new_password', None)
+        new_password_confirm = validated_data.pop('new_password_confirm', None)
+        
+        if new_password:
+            instance.set_password(new_password)
+        
+        # Update other fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        
+        instance.save()
+        return instance
+
 class AdminUserSerializer(serializers.ModelSerializer):
     is_2fa_enabled = serializers.SerializerMethodField()
     operations = serializers.SerializerMethodField()

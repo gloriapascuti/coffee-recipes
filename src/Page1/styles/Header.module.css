@@ -56,54 +56,117 @@
 /*!*    gap: 48px;*!*/
 /*!*}*!*/
 
+.headerContainer {
+    width: 100%;
+    background-color: white;
+    font-family: Georgia, serif;
+    margin-bottom: 40px;
+}
+
+.navigationSection {
+    position: relative;
+    height: 120px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.contentSection {
+    padding: 40px 80px;
+    text-align: left;
+}
+
+.header {
+    width: 100%;
+    position: relative;
+    background-color: white;
+    height: 100%;
+    overflow: hidden;
+    text-align: left;
+    font-size: 20px;
+    color: black;
+    font-family: Georgia, serif;
+}
+
 .page {
     position: relative;
     line-height: 150%;
     font-weight: 500;
-    background-color: white; /* Inner element stays white */
-    padding: 10px;
+    background-color: white;
+    padding: 10px 15px;
     font-family: Georgia;
+    text-decoration: none;
+    color: black;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.page:hover {
+    background-color: #f5f5f5;
+    text-decoration: none;
+    color: black;
+}
+
+.activePage {
+    background-color: #8B4513 !important;
+    color: white !important;
+    font-weight: bold;
+}
+
+.activePage:hover {
+    background-color: #A0522D !important;
+    color: white !important;
 }
 
 .items {
     position: absolute;
-    top: 56px;
-    right: 80px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     display: flex;
     flex-direction: row;
     align-items: center;
-    justify-content: flex-end;
-    gap: 48px;
+    justify-content: center;
+    gap: 24px;
 }
+
+.userActions {
+    position: absolute;
+    top: 50%;
+    right: 80px;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+}
+
 .siteTitle {
     position: absolute;
-    top: 67px;
+    top: 50%;
     left: 80px;
+    transform: translateY(-50%);
     line-height: 150%;
     font-weight: 500;
     font-family: Georgia;
+    font-size: 20px;
 }
 
 .Title {
-    left: 20px;
-    top: 150px;
-    width: 100%;
-    position: relative;
     font-size: 64px;
     letter-spacing: -0.02em;
-    display: inline-block;
     font-family: Georgia;
     color: #000;
-    text-align: left;
+    margin-bottom: 20px;
+    font-weight: normal;
 }
 
 .descriptionTitle {
-    position: absolute;
-    left: 70px;
-    top: 260px;
+    font-size: 18px;
     line-height: 150%;
     font-weight: 500;
     font-family: Georgia;
+    color: #666;
+    max-width: 800px;
 }
 
 .logoutButton {
@@ -115,7 +178,30 @@
     font-size: 16px;
     cursor: pointer;
     font-family: Georgia;
-    margin-left: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.logoutButton:hover {
+    background-color: #333;
+}
+
+.profileButton {
+    background-color: #8B4513;
+    color: white;
+    padding: 10px 12px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    font-family: Georgia;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+
+.profileButton:hover {
+    background-color: #A0522D;
+    text-decoration: none;
+    color: white;
 }
 
 .settingsButton {
@@ -127,5 +213,31 @@
     font-size: 16px;
     cursor: pointer;
     font-family: Georgia;
-    margin-left: 5px;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+
+.settingsButton:hover {
+    background-color: #d0d0d0;
+    text-decoration: none;
+    color: black;
+}
+
+.recommendationsButton {
+    background: linear-gradient(135deg, #8B4513, #D2691E);
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    font-family: Georgia;
+}
+
+.recommendationsButton:hover {
+    background: linear-gradient(135deg, #A0522D, #F4A460);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    text-decoration: none;
+    color: white;
 }

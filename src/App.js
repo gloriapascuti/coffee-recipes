@@ -20,6 +20,9 @@ import Login from './authentication/Login';
 import Register from './authentication/Register';
 import PrivateRoute from './authentication/PrivateRoute';
 import UserSettings from './authentication/UserSettings';
+import Profile from './authentication/Profile';
+import Recommendations from './Page3/Recommendations';
+import MyRecipe from './Page3/MyRecipe';
 import './App.css';
 import './components/StatusIndicator.css';
 
@@ -32,8 +35,10 @@ function App() {
                     <Route exact path="/"       component={EntryPage} />
                     <Route       path="/login"    component={Login} />
                     <Route       path="/register" component={Register} />
+                    
+                    {/* Page 1 Route */}
                     <PrivateRoute
-                        path="/app"
+                        path="/page1"
                         component={() => (
                             <>
                                 <Header/>
@@ -43,6 +48,17 @@ function App() {
                                 <GrindingBeans/>
                                 <Cards/>
                                 <ViewSection/>
+                                <NavigationFooter/>
+                            </>
+                        )}
+                    />
+                    
+                    {/* Page 2 Route */}
+                    <PrivateRoute
+                        path="/page2"
+                        component={() => (
+                            <>
+                                <Header/>
                                 <RUD/>
                                 <FileUploader/>
                                 <CoffeeDifferences/>
@@ -51,12 +67,33 @@ function App() {
                             </>
                         )}
                     />
+                    
+                    {/* Page 3 Route */}
+                    <PrivateRoute
+                        path="/page3"
+                        component={() => (
+                            <>
+                                <Header/>
+                                <MyRecipe/>
+                                <NavigationFooter/>
+                            </>
+                        )}
+                    />
+                    
+                    {/* Legacy route - redirect to page1 */}
+                    <PrivateRoute
+                        path="/app"
+                        component={() => <Redirect to="/page1" />}
+                    />
+                    
                     <PrivateRoute path="/settings" component={() => (
                         <>
                             <UserNotification />
                             <UserSettings />
                         </>
                     )} />
+                    <PrivateRoute path="/profile" component={Profile} />
+                    <PrivateRoute path="/recommendations" component={Recommendations} />
                     <Redirect to="/" />
                 </Switch>
             </CoffeeProvider>

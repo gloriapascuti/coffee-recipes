@@ -111,13 +111,12 @@ export default function RUD() {
 
     return (
         <div>
-            <div className={styles.Title}>Coffee Statistics</div>
             <Charts />
 
             <AdminUserTable />
 
             <div>
-                <div className={styles.Title}>All recipes</div>
+                <div className={styles.sectionTitle}>All recipes</div>
 
                 {/* ↙︎ our new toggle */}
                 {/*<MyOwnRecipes*/}
