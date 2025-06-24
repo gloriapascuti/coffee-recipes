@@ -78,7 +78,10 @@ const InfiniteScroll = ({data, loading, getBackgroundColor, loadMoreData}) => {
             {displayData && displayData.map((coffee, index) => (
                 <li key={index} className={styles.customerQuote} style={{ backgroundColor: getBackgroundColor(coffee.name) }}>
                     <div className={styles.recipeHeader}>
-                        <div className={styles.aTerrificPiece}>{coffee.name}</div>
+                        <div className={styles.aTerrificPiece}>
+                            {coffee.name}
+                            {coffee.is_community_winner && <span className={styles.communityWinnerStar}>⭐</span>}
+                        </div>
                         <div className={styles.actionButtons}>
                             <button 
                                 className={`${styles.likeButton} ${coffee.is_liked ? styles.likeActive : ''}`}

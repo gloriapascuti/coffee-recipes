@@ -74,6 +74,9 @@ const Header = () => {
                         <Link to="/recommendations" className={styles.recommendationsButton}>
                             Recommendations
                         </Link>
+                        <Link to="/community" className={styles.communityButton}>
+                            Community
+                        </Link>
                     </div>
                     {user && (
                         <div className={styles.userActions}>

@@ -241,3 +241,22 @@
     text-decoration: none;
     color: white;
 }
+
+.communityButton {
+    background: linear-gradient(135deg, #A0522D, #CD853F);
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    font-family: Georgia;
+}
+
+.communityButton:hover {
+    background: linear-gradient(135deg, #B8632F, #DEB887);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    text-decoration: none;
+    color: white;
+}

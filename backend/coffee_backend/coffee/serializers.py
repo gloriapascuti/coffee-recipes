@@ -3,10 +3,12 @@ from .models.user import User
 from .models.coffee import Coffee, Origin, Like
 from .models.uploads import UploadedFile
 from .models.operations import Operation
+from .models.challenges import Challenge, ChallengeRecipe, Vote, Notification
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.models import User as AuthUser
 from django.contrib.auth import authenticate
 from .models.user_profile import UserProfile
+from users.serializers import UserSerializer as CustomUserSerializer
 
 class OriginSerializer(serializers.ModelSerializer):
     class Meta:
@@ -21,7 +23,7 @@ class CoffeeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model  = Coffee
-        fields = ['id', 'name', 'origin', 'description', 'user', 'likes_count', 'is_liked']
+        fields = ['id', 'name', 'origin', 'description', 'user', 'likes_count', 'is_liked', 'is_community_winner']
 
     def get_is_liked(self, obj):
         request = self.context.get('request')
@@ -116,6 +118,79 @@ class OperationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Operation
         fields = ['id', 'user', 'username', 'operation', 'timestamp']
+
+# Challenge System Serializers
+class ChallengeRecipeSerializer(serializers.ModelSerializer):
+    user = CustomUserSerializer(read_only=True)
+    origin = OriginSerializer()
+
+    class Meta:
+        model = ChallengeRecipe
+        fields = ['id', 'user', 'name', 'origin', 'description', 'created_at']
+
+    def create(self, validated_data):
+        origin_data = validated_data.pop('origin')
+        origin, _ = Origin.objects.get_or_create(**origin_data)
+        return ChallengeRecipe.objects.create(origin=origin, **validated_data)
+
+class ChallengeSerializer(serializers.ModelSerializer):
+    challenger = CustomUserSerializer(read_only=True)
+    challenged = CustomUserSerializer(read_only=True)
+    winner = CustomUserSerializer(read_only=True)
+    recipes = ChallengeRecipeSerializer(many=True, read_only=True)
+    total_votes = serializers.ReadOnlyField()
+    challenger_votes = serializers.ReadOnlyField()
+    challenged_votes = serializers.ReadOnlyField()
+    can_vote = serializers.SerializerMethodField()
+    user_vote = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Challenge
+        fields = [
+            'id', 'challenger', 'challenged', 'coffee_type', 'status', 
+            'created_at', 'accepted_at', 'completed_at', 'winner',
+            'recipes', 'total_votes', 'challenger_votes', 'challenged_votes',
+            'can_vote', 'user_vote'
+        ]
+
+    def get_can_vote(self, obj):
+        request = self.context.get('request')
+        if not request or not request.user.is_authenticated:
+            return False
+        
+        user = request.user
+        # Can't vote if you're a participant or if not in voting phase
+        if obj.status != 'voting':
+            return False
+        if user == obj.challenger or user == obj.challenged:
+            return False
+        # Can't vote if already voted
+        if obj.votes.filter(voter=user).exists():
+            return False
+        return True
+
+    def get_user_vote(self, obj):
+        request = self.context.get('request')
+        if not request or not request.user.is_authenticated:
+            return None
+        
+        vote = obj.votes.filter(voter=request.user).first()
+        return vote.voted_for.username if vote else None
+
+class VoteSerializer(serializers.ModelSerializer):
+    voter = CustomUserSerializer(read_only=True)
+    voted_for = CustomUserSerializer(read_only=True)
+
+    class Meta:
+        model = Vote
+        fields = ['id', 'voter', 'voted_for', 'created_at']
+
+class NotificationSerializer(serializers.ModelSerializer):
+    challenge = ChallengeSerializer(read_only=True)
+
+    class Meta:
+        model = Notification
+        fields = ['id', 'notification_type', 'message', 'challenge', 'is_read', 'created_at']
 
 
 

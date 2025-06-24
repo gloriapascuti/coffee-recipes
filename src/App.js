@@ -22,6 +22,7 @@ import PrivateRoute from './authentication/PrivateRoute';
 import UserSettings from './authentication/UserSettings';
 import Profile from './authentication/Profile';
 import Recommendations from './Page3/Recommendations';
+import Community from './Page3/Community';
 import MyRecipe from './Page3/MyRecipe';
 import './App.css';
 import './components/StatusIndicator.css';
@@ -92,6 +93,7 @@ function App() {
                     )} />
                     <PrivateRoute path="/profile" component={Profile} />
                     <PrivateRoute path="/recommendations" component={Recommendations} />
+                    <PrivateRoute path="/community" component={Community} />
                     <Redirect to="/" />
                 </Switch>
             </CoffeeProvider>

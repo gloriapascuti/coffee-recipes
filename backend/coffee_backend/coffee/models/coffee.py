@@ -16,6 +16,7 @@ class Coffee(models.Model):
         on_delete=models.CASCADE,
         default=1    # existing coffees stay tied to the admin user
     )
+    is_community_winner = models.BooleanField(default=False)  # Mark recipes that won community challenges
 
     @property
     def likes_count(self):

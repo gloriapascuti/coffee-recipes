@@ -185,6 +185,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .models.coffee import Coffee, Origin, Like
 from .models.uploads import UploadedFile
 from .models.coffee_operations import CoffeeOperation
+from .models.challenges import Challenge, ChallengeRecipe, Vote, Notification
 from .serializers import (
     CoffeeSerializer,
     OriginSerializer,
@@ -194,6 +195,10 @@ from .serializers import (
     UserSerializer,
     AuthUserSerializer,
     OperationSerializer,
+    ChallengeSerializer,
+    ChallengeRecipeSerializer,
+    VoteSerializer,
+    NotificationSerializer,
 )
 from .models.operations import Operation
 from .models.user import User
@@ -573,4 +578,348 @@ def most_popular_recipes(request):
         popular_coffees = list(popular_coffees) + list(recent_coffees)
     
     serializer = CoffeeSerializer(popular_coffees, many=True, context={'request': request})
+    return Response(serializer.data)
+
+
+# Challenge System Views
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def challenge_list(request):
+    """Get all challenges or create a new challenge"""
+    if request.method == 'GET':
+        challenges = Challenge.objects.select_related(
+            'challenger', 'challenged', 'winner'
+        ).prefetch_related('recipes', 'votes').all().order_by('-created_at')
+        
+        serializer = ChallengeSerializer(challenges, many=True, context={'request': request})
+        return Response(serializer.data)
+    
+    elif request.method == 'POST':
+        challenged_username = request.data.get('challenged_username')
+        coffee_type = request.data.get('coffee_type')
+        
+        if not challenged_username or not coffee_type:
+            return Response(
+                {'error': 'challenged_username and coffee_type are required'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            from users.models import CustomUser
+            challenged_user = CustomUser.objects.get(username=challenged_username)
+        except CustomUser.DoesNotExist:
+            return Response(
+                {'error': 'User not found'}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        if challenged_user == request.user:
+            return Response(
+                {'error': 'You cannot challenge yourself'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        if challenged_user.is_banned:
+            return Response(
+                {'error': 'Cannot challenge banned users'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Check if user is already in an active challenge
+        active_statuses = ['pending', 'accepted', 'active', 'voting']
+        existing_challenge = Challenge.objects.filter(
+            models.Q(challenger=challenged_user) | models.Q(challenged=challenged_user),
+            status__in=active_statuses
+        ).exists()
+        
+        if existing_challenge:
+            return Response(
+                {'error': 'User is already in an active challenge'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        challenge = Challenge.objects.create(
+            challenger=request.user,
+            challenged=challenged_user,
+            coffee_type=coffee_type
+        )
+        
+        # Create notification for challenged user
+        Notification.objects.create(
+            user=challenged_user,
+            notification_type='challenge',
+            message=f'{request.user.username} challenged you to create a {coffee_type} recipe!',
+            challenge=challenge
+        )
+        
+        serializer = ChallengeSerializer(challenge, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def respond_to_challenge(request, challenge_id):
+    """Accept or decline a challenge"""
+    try:
+        challenge = Challenge.objects.get(id=challenge_id)
+    except Challenge.DoesNotExist:
+        return Response({'error': 'Challenge not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    if challenge.challenged != request.user:
+        return Response(
+            {'error': 'You can only respond to challenges directed at you'}, 
+            status=status.HTTP_403_FORBIDDEN
+        )
+    
+    if challenge.status != 'pending':
+        return Response(
+            {'error': 'Challenge is no longer pending'}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    response = request.data.get('response')  # 'accept' or 'decline'
+    
+    if response == 'accept':
+        challenge.status = 'accepted'
+        challenge.accepted_at = timezone.now()
+        challenge.save()
+        
+        # Create notifications
+        Notification.objects.create(
+            user=challenge.challenger,
+            notification_type='challenge_accepted',
+            message=f'{request.user.username} accepted your challenge! Submit your recipe.',
+            challenge=challenge
+        )
+        
+    elif response == 'decline':
+        challenge.status = 'declined'
+        challenge.save()
+        
+        # Create notification
+        Notification.objects.create(
+            user=challenge.challenger,
+            notification_type='challenge_declined',
+            message=f'{request.user.username} declined your challenge.',
+            challenge=challenge
+        )
+        
+    else:
+        return Response(
+            {'error': 'Response must be either "accept" or "decline"'}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    serializer = ChallengeSerializer(challenge, context={'request': request})
+    return Response(serializer.data)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def submit_recipe(request, challenge_id):
+    """Submit a recipe for a challenge"""
+    try:
+        challenge = Challenge.objects.get(id=challenge_id)
+    except Challenge.DoesNotExist:
+        return Response({'error': 'Challenge not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    if request.user not in [challenge.challenger, challenge.challenged]:
+        return Response(
+            {'error': 'You are not a participant in this challenge'}, 
+            status=status.HTTP_403_FORBIDDEN
+        )
+    
+    if challenge.status != 'accepted':
+        return Response(
+            {'error': 'Challenge must be accepted before submitting recipes'}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    # Check if user already submitted a recipe
+    if ChallengeRecipe.objects.filter(challenge=challenge, user=request.user).exists():
+        return Response(
+            {'error': 'You have already submitted a recipe for this challenge'}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    serializer = ChallengeRecipeSerializer(data=request.data, context={'request': request})
+    if serializer.is_valid():
+        recipe = serializer.save(challenge=challenge, user=request.user)
+        
+        # Check if both users have submitted recipes
+        if challenge.recipes.count() == 2:
+            challenge.status = 'voting'
+            challenge.save()
+            
+            # Notify both participants that voting has started
+            for user in [challenge.challenger, challenge.challenged]:
+                Notification.objects.create(
+                    user=user,
+                    notification_type='voting_started',
+                    message=f'Both recipes are submitted! Voting has started for the {challenge.coffee_type} challenge.',
+                    challenge=challenge
+                )
+        
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def vote_challenge(request, challenge_id):
+    """Vote for a recipe in a challenge"""
+    try:
+        challenge = Challenge.objects.get(id=challenge_id)
+    except Challenge.DoesNotExist:
+        return Response({'error': 'Challenge not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    if challenge.status != 'voting':
+        return Response(
+            {'error': 'Challenge is not in voting phase'}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    # Check if user is a participant (participants can't vote)
+    if request.user in [challenge.challenger, challenge.challenged]:
+        return Response(
+            {'error': 'Challenge participants cannot vote'}, 
+            status=status.HTTP_403_FORBIDDEN
+        )
+    
+    # Check if user already voted
+    if Vote.objects.filter(challenge=challenge, voter=request.user).exists():
+        return Response(
+            {'error': 'You have already voted in this challenge'}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    voted_for_username = request.data.get('voted_for')
+    
+    try:
+        from users.models import CustomUser
+        voted_for_user = CustomUser.objects.get(username=voted_for_username)
+    except CustomUser.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    if voted_for_user not in [challenge.challenger, challenge.challenged]:
+        return Response(
+            {'error': 'You can only vote for challenge participants'}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    vote = Vote.objects.create(
+        challenge=challenge,
+        voter=request.user,
+        voted_for=voted_for_user
+    )
+    
+    # Check if we have enough votes to determine a winner
+    total_users = CustomUser.objects.count()
+    total_votes = challenge.total_votes
+    challenger_votes = challenge.challenger_votes
+    challenged_votes = challenge.challenged_votes
+    
+    # Winner needs more than half of total users to vote for them
+    required_votes = (total_users // 2) + 1
+    
+    winner = None
+    if challenger_votes >= required_votes:
+        winner = challenge.challenger
+    elif challenged_votes >= required_votes:
+        winner = challenge.challenged
+    
+    if winner:
+        challenge.status = 'completed'
+        challenge.winner = winner
+        challenge.completed_at = timezone.now()
+        challenge.save()
+        
+        # Find the winning recipe and add it to main coffee list with star
+        winning_recipe = ChallengeRecipe.objects.get(challenge=challenge, user=winner)
+        # Create the coffee with star emoji in the name
+        winner_votes = challenge.challenger_votes if winner == challenge.challenger else challenge.challenged_votes
+        new_coffee = Coffee.objects.create(
+            name=f"⭐ {winning_recipe.name}",
+            origin=winning_recipe.origin,
+            description=winning_recipe.description,
+            user=winner,
+            is_community_winner=True
+        )
+        
+        # Create likes from all the voters who voted for this winner
+        winning_votes = Vote.objects.filter(challenge=challenge, voted_for=winner)
+        for vote in winning_votes:
+            Like.objects.create(coffee=new_coffee, user=vote.voter)
+        
+        # Create notifications
+        Notification.objects.create(
+            user=winner,
+            notification_type='challenge_won',
+            message=f'Congratulations! You won the {challenge.coffee_type} challenge!',
+            challenge=challenge
+        )
+        
+        loser = challenge.challenger if winner == challenge.challenged else challenge.challenged
+        Notification.objects.create(
+            user=loser,
+            notification_type='challenge_lost',
+            message=f'You lost the {challenge.coffee_type} challenge. Better luck next time!',
+            challenge=challenge
+        )
+    
+    serializer = ChallengeSerializer(challenge, context={'request': request})
+    return Response(serializer.data)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_notifications(request):
+    """Get notifications for the current user"""
+    notifications = Notification.objects.filter(
+        user=request.user
+    ).select_related('challenge').order_by('-created_at')
+    
+    serializer = NotificationSerializer(notifications, many=True, context={'request': request})
+    return Response(serializer.data)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def mark_notification_read(request, notification_id):
+    """Mark a notification as read"""
+    try:
+        notification = Notification.objects.get(id=notification_id, user=request.user)
+        notification.is_read = True
+        notification.save()
+        return Response({'message': 'Notification marked as read'})
+    except Notification.DoesNotExist:
+        return Response({'error': 'Notification not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def available_users(request):
+    """Get users that can be challenged (not currently in active challenges and not banned)"""
+    from users.models import CustomUser
+    from users.serializers import UserSerializer
+    
+    active_statuses = ['pending', 'accepted', 'active', 'voting']
+    
+    # Get users who are currently in active challenges
+    busy_user_ids = set()
+    active_challenges = Challenge.objects.filter(status__in=active_statuses)
+    for challenge in active_challenges:
+        busy_user_ids.add(challenge.challenger.id)
+        busy_user_ids.add(challenge.challenged.id)
+    
+    # Get all users except current user, busy users, and banned users
+    available_users = CustomUser.objects.exclude(
+        models.Q(id=request.user.id) | 
+        models.Q(id__in=busy_user_ids) |
+        models.Q(is_banned=True)
+    ).order_by('username')
+    
+    serializer = UserSerializer(available_users, many=True)
     return Response(serializer.data)

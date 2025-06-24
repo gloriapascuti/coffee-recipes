@@ -12,6 +12,13 @@ from .views import (
     generate_ai_recipe,
     toggle_like,
     most_popular_recipes,
+    challenge_list,
+    respond_to_challenge,
+    submit_recipe,
+    vote_challenge,
+    user_notifications,
+    mark_notification_read,
+    available_users,
 )
 
 urlpatterns = [
@@ -53,4 +60,13 @@ urlpatterns = [
     
     # Most popular recipes
     path('most-popular/', most_popular_recipes, name='most-popular-recipes'),
+    
+    # Challenge system
+    path('challenges/', challenge_list, name='challenge-list'),
+    path('challenges/<int:challenge_id>/respond/', respond_to_challenge, name='respond-to-challenge'),
+    path('challenges/<int:challenge_id>/submit-recipe/', submit_recipe, name='submit-recipe'),
+    path('challenges/<int:challenge_id>/vote/', vote_challenge, name='vote-challenge'),
+    path('notifications/', user_notifications, name='user-notifications'),
+    path('notifications/<int:notification_id>/read/', mark_notification_read, name='mark-notification-read'),
+    path('available-users/', available_users, name='available-users'),
 ]
