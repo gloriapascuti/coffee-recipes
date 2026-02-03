@@ -14,7 +14,9 @@ const Cards = () => {
             const response = await fetch('http://127.0.0.1:8000/api/most-popular/');
             if (response.ok) {
                 const data = await response.json();
-                setPopularRecipes(data);
+                // Ensure we only show top 3 most liked recipes
+                const top3 = data.slice(0, 3).sort((a, b) => (b.likes_count || 0) - (a.likes_count || 0));
+                setPopularRecipes(top3);
             } else {
                 console.error('Failed to fetch popular recipes');
             }
@@ -57,22 +59,26 @@ const Cards = () => {
             <div className={styles.content}>
                 <div className={styles.Title}>Most Popular Recipes</div>
                 <div className={styles.cards}>
-                    {popularRecipes.map((recipe, index) => (
-                        <div key={recipe.id} className={getCardClassName(index)}>
-                            <div className={styles.aTerrificPiece}>
-                                "{truncateDescription(recipe.description)}"
-                            </div>
-                            <div className={styles.avatar}>
-                                <div className={styles.avatarIcon}></div>
-                                <div className={styles.nameParent}>
-                                    <div className={styles.name}>{recipe.name}</div>
-                                    <div className={styles.description}>
-                                        {recipe.origin?.name || 'Unknown Origin'} • {recipe.likes_count || 0} likes
+                    {popularRecipes.length > 0 ? (
+                        popularRecipes.map((recipe, index) => (
+                            <div key={recipe.id} className={getCardClassName(index)}>
+                                <div className={styles.aTerrificPiece}>
+                                    "{truncateDescription(recipe.description)}"
+                                </div>
+                                <div className={styles.avatar}>
+                                    <div className={styles.avatarIcon}></div>
+                                    <div className={styles.nameParent}>
+                                        <div className={styles.name}>{recipe.name}</div>
+                                        <div className={styles.description}>
+                                            {recipe.origin?.name || 'Unknown Origin'} • {recipe.likes_count || 0} {recipe.likes_count === 1 ? 'like' : 'likes'}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        ))
+                    ) : (
+                        <div className={styles.noRecipesMessage}>No popular recipes available yet. Be the first to like a recipe!</div>
+                    )}
                 </div>
             </div>
         </div>

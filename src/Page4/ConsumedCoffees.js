@@ -5,19 +5,8 @@ import styles from './styles/ConsumedCoffees.module.css';
 
 const API_URL = 'http://127.0.0.1:8000/api';
 
-function authHeaders() {
-    const accessToken = localStorage.getItem("access_token");
-    const headers = {
-        "Content-Type": "application/json"
-    };
-    if (accessToken) {
-        headers["Authorization"] = `Bearer ${accessToken}`;
-    }
-    return headers;
-}
-
 export default function ConsumedCoffees() {
-    const { coffees } = useCoffee();
+    const { coffees, authenticatedFetch } = useCoffee();
     const [consumedCoffees, setConsumedCoffees] = useState({
         today: [],
         yesterday: [],
@@ -27,6 +16,7 @@ export default function ConsumedCoffees() {
     });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(null);
     const [activeTab, setActiveTab] = useState('today');
 
     useEffect(() => {
@@ -36,13 +26,16 @@ export default function ConsumedCoffees() {
     const fetchConsumedCoffees = async () => {
         try {
             setLoading(true);
-            const response = await fetch(`${API_URL}/consumed/`, {
+            const response = await authenticatedFetch(`${API_URL}/consumed/`, {
                 method: 'GET',
-                headers: authHeaders()
+                headers: {
+                    'Content-Type': 'application/json'
+                }
             });
 
             if (!response.ok) {
-                throw new Error('Failed to fetch consumed coffees');
+                const errorData = await response.json().catch(() => ({ detail: 'Failed to fetch consumed coffees' }));
+                throw new Error(errorData.detail || errorData.error || 'Failed to fetch consumed coffees');
             }
 
             const data = await response.json();
@@ -58,28 +51,36 @@ export default function ConsumedCoffees() {
 
     const handleAddConsumed = async (coffeeId) => {
         try {
-            const response = await fetch(`${API_URL}/consumed/${coffeeId}/`, {
+            const response = await authenticatedFetch(`${API_URL}/consumed/${coffeeId}/`, {
                 method: 'POST',
-                headers: authHeaders()
+                headers: {
+                    'Content-Type': 'application/json'
+                }
             });
 
             if (!response.ok) {
-                throw new Error('Failed to add consumed coffee');
+                const errorData = await response.json().catch(() => ({ detail: 'Failed to add consumed coffee' }));
+                throw new Error(errorData.detail || errorData.error || 'Failed to add consumed coffee');
             }
 
             // Refresh the list
-            fetchConsumedCoffees();
+            await fetchConsumedCoffees();
+            setSuccess('Coffee added successfully!');
+            setTimeout(() => setSuccess(null), 3000); // Clear success after 3 seconds
         } catch (err) {
             console.error('Error adding consumed coffee:', err);
-            alert('Failed to add coffee. Please try again.');
+            setError(err.message || 'Failed to add coffee. Please try again.');
+            setTimeout(() => setError(null), 5000); // Clear error after 5 seconds
         }
     };
 
     const handleRemoveConsumed = async (consumedId) => {
         try {
-            const response = await fetch(`${API_URL}/consumed/remove/${consumedId}/`, {
+            const response = await authenticatedFetch(`${API_URL}/consumed/remove/${consumedId}/`, {
                 method: 'DELETE',
-                headers: authHeaders()
+                headers: {
+                    'Content-Type': 'application/json'
+                }
             });
 
             if (!response.ok) {
@@ -90,7 +91,8 @@ export default function ConsumedCoffees() {
             fetchConsumedCoffees();
         } catch (err) {
             console.error('Error removing consumed coffee:', err);
-            alert('Failed to remove coffee. Please try again.');
+            setError(err.message || 'Failed to remove coffee. Please try again.');
+            setTimeout(() => setError(null), 5000);
         }
     };
 
@@ -188,6 +190,7 @@ export default function ConsumedCoffees() {
                 </div>
 
                 {error && <div className={styles.error}>{error}</div>}
+                {success && <div className={styles.success}>{success}</div>}
 
                 {renderCoffeeList(getCurrentList())}
             </div>

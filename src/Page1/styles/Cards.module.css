@@ -129,6 +129,16 @@
     width: 100%;
 }
 
+.noRecipesMessage {
+    text-align: center;
+    font-size: 18px;
+    color: #8B4513;
+    font-style: italic;
+    padding: 40px;
+    width: 100%;
+    font-family: Georgia, serif;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .container {

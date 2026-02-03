@@ -1,0 +1,254 @@
+.container {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    font-family: Georgia, serif;
+}
+
+.title {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    color: #333;
+    font-family: Georgia, serif;
+    border-bottom: 2px solid #8B4513;
+    padding-bottom: 0.5rem;
+}
+
+.description {
+    color: #666;
+    margin-bottom: 2rem;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.loading {
+    text-align: center;
+    padding: 2rem;
+    color: #666;
+    font-family: Georgia, serif;
+}
+
+.message {
+    padding: 1rem;
+    border-radius: 4px;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+    font-family: Georgia, serif;
+}
+
+.message.success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.message.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.section {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.section:last-of-type {
+    border-bottom: none;
+}
+
+.section h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: #8B4513;
+    font-size: 1.3rem;
+    font-family: Georgia, serif;
+    border-bottom: 2px solid #8B4513;
+    padding-bottom: 0.5rem;
+}
+
+.formGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.formGroup {
+    display: flex;
+    flex-direction: column;
+}
+
+.formGroup label {
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #333;
+    font-family: Georgia, serif;
+}
+
+.formGroup input[type="text"],
+.formGroup input[type="number"],
+.formGroup input[type="date"],
+.formGroup select,
+.formGroup textarea {
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-family: Georgia, serif;
+    transition: border-color 0.3s;
+}
+
+.formGroup input:focus,
+.formGroup select:focus,
+.formGroup textarea:focus {
+    outline: none;
+    border-color: #8B4513;
+    box-shadow: 0 0 0 2px rgba(139, 69, 19, 0.2);
+}
+
+.formGroup textarea {
+    resize: vertical;
+}
+
+.checkboxGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.checkboxGroup label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-weight: normal;
+    font-family: Georgia, serif;
+}
+
+.checkboxGroup input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #8B4513;
+}
+
+.formGroup label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #8B4513;
+    margin-right: 0.5rem;
+}
+
+.bmiInfo {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background-color: #e3f2fd;
+    border-radius: 4px;
+    color: #1976d2;
+    font-family: Georgia, serif;
+}
+
+.addBpButton {
+    background-color: #8B4513;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    transition: background-color 0.3s;
+    font-family: Georgia, serif;
+}
+
+.addBpButton:hover {
+    background-color: #A0522D;
+}
+
+.bpForm {
+    margin-bottom: 1.5rem;
+    padding: 1.5rem;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.saveBpButton {
+    background-color: #8B4513;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-top: 1rem;
+    transition: background-color 0.3s;
+    font-family: Georgia, serif;
+}
+
+.saveBpButton:hover {
+    background-color: #A0522D;
+}
+
+.bpList {
+    margin-top: 1.5rem;
+}
+
+.bpList h4 {
+    margin-bottom: 1rem;
+    color: #333;
+    font-family: Georgia, serif;
+}
+
+.bpEntry {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+    border: 1px solid #e0e0e0;
+}
+
+.bpValue {
+    font-weight: bold;
+    color: #8B4513;
+    font-size: 1.1rem;
+    font-family: Georgia, serif;
+}
+
+.bpDate {
+    color: #666;
+    font-size: 0.9rem;
+    font-family: Georgia, serif;
+}
+
+.saveButton {
+    background-color: #8B4513;
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 4px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    width: 100%;
+    transition: background-color 0.3s;
+    margin-top: 2rem;
+    font-family: Georgia, serif;
+    font-weight: bold;
+}
+
+.saveButton:hover:not(:disabled) {
+    background-color: #A0522D;
+}
+
+.saveButton:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}

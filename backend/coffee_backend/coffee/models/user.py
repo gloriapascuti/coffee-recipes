@@ -20,7 +20,7 @@ class User(models.Model):
         constraints = [
             # Permit "admin" only on the row whose id=1; everywhere else username ≠ "admin"
             models.CheckConstraint(
-                check=Q(id=1) | ~Q(username__iexact="admin"),
+                condition=Q(id=1) | ~Q(username__iexact="admin"),
                 name="username_not_admin_except_reserved"
             ),
         ]

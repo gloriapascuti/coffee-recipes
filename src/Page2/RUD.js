@@ -29,18 +29,39 @@ export default function RUD() {
     // sort
     const [isAscending, setIsAscending] = useState(true);
 
-    // 1) WebSocket real-time updates
+    // 1) WebSocket real-time updates (optional - only for real-time new coffee notifications)
     useEffect(() => {
-        const socket = new WebSocket(WS_URL);
-        socket.onmessage = e => {
-            const newCoffee = JSON.parse(e.data);
-            setCoffees(prev => [newCoffee, ...prev]);
+        let socket = null;
+        try {
+            socket = new WebSocket(WS_URL);
+            socket.onopen = () => {
+                console.log("WebSocket connected for real-time updates");
+            };
+            socket.onmessage = e => {
+                const newCoffee = JSON.parse(e.data);
+                setCoffees(prev => [newCoffee, ...prev]);
+            };
+            socket.onerror = (error) => {
+                // WebSocket is optional - silently fail if not available
+                console.log("WebSocket not available (this is OK - recipes still load via REST API)");
+            };
+            socket.onclose = () => {
+                console.log("WebSocket closed");
+            };
+        } catch (error) {
+            // WebSocket connection failed - this is fine, recipes still work via REST API
+            console.log("WebSocket connection failed (this is OK)");
+        }
+        return () => {
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                socket.close();
+            }
         };
-        return () => socket.close();
     }, [setCoffees]);
 
     // 2) Filter pipeline
     useEffect(() => {
+        console.log("RUD: coffees count:", coffees.length);
         let list = coffees;
 
         // only mine?
@@ -60,6 +81,7 @@ export default function RUD() {
             list = list.filter(c => c.origin.name === selectedOrigin);
         }
 
+        console.log("RUD: filtered count:", list.length);
         setFilteredCoffee(list);
     }, [coffees, showMine, input, selectedOrigin, userId]);
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useCoffee } from '../CoffeeContext';
-import styles from './styles/Login.module.css';
+import styles from './styles/TwoFactorSettings.module.css';
 
 function TwoFactorSettings() {
     const { user, authenticatedFetch } = useCoffee();
@@ -132,16 +132,16 @@ function TwoFactorSettings() {
     };
 
     return (
-        <div style={{ maxWidth: '400px', margin: '20px auto', fontFamily: 'Georgia' }}>
-            <h2>Two-Factor Authentication</h2>
-            {error && <div style={{ color: 'red', marginBottom: '10px' }}>{error}</div>}
+        <div className={styles.container}>
+            <h2 className={styles.title}>Two-Factor Authentication</h2>
+            {error && <div className={styles.error}>{error}</div>}
 
             {!is2FAEnabled ? (
                 !showSetup ? (
                     <div>
-                        <p>Two-factor authentication is not enabled.</p>
+                        <p className={styles.status}>Two-factor authentication is not enabled.</p>
                         <button
-                            className={styles.loginButton}
+                            className={styles.button}
                             onClick={handleEnable2FA}
                         >
                             Enable 2FA
@@ -149,41 +149,41 @@ function TwoFactorSettings() {
                     </div>
                 ) : showEmailInput ? (
                     <div>
-                        <p>Enter your email address to set up 2FA:</p>
+                        <p className={styles.instructions}>Enter your email address to set up 2FA:</p>
                         <input
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             placeholder="Enter your email"
                             required
-                            style={{ marginBottom: '10px', width: '100%' }}
+                            className={styles.input}
                         />
-                        <br/>
-                        <button
-                            className={styles.loginButton}
-                            onClick={handleEmailSubmit}
-                        >
-                            Continue
-                        </button>
-                        <button
-                            className={styles.loginButton}
-                            onClick={handleCancel}
-                            style={{ marginLeft: '10px' }}
-                        >
-                            Cancel
-                        </button>
+                        <div className={styles.buttonGroup}>
+                            <button
+                                className={styles.button}
+                                onClick={handleEmailSubmit}
+                            >
+                                Continue
+                            </button>
+                            <button
+                                className={styles.buttonSecondary}
+                                onClick={handleCancel}
+                            >
+                                Cancel
+                            </button>
+                        </div>
                     </div>
                 ) : showQRCode ? (
                     <div>
-                        <p>Scan this QR code with your authenticator app:</p>
+                        <p className={styles.instructions}>Scan this QR code with your authenticator app:</p>
                         {qrCode && (
                             <img
                                 src={`data:image/png;base64,${qrCode}`}
                                 alt="QR Code"
-                                style={{ marginBottom: '20px', display: 'block' }}
+                                className={styles.qrCode}
                             />
                         )}
-                        <p>Enter the 6-digit code from your authenticator app:</p>
+                        <p className={styles.instructions}>Enter the 6-digit code from your authenticator app:</p>
                         <input
                             type="text"
                             value={verificationCode}
@@ -192,29 +192,29 @@ function TwoFactorSettings() {
                             maxLength={6}
                             pattern="[0-9]{6}"
                             required
-                            style={{ marginBottom: '10px' }}
+                            className={styles.input}
                         />
-                        <br/>
-                        <button
-                            className={styles.loginButton}
-                            onClick={handleVerify2FA}
-                        >
-                            Verify
-                        </button>
-                        <button
-                            className={styles.loginButton}
-                            onClick={handleCancel}
-                            style={{ marginLeft: '10px' }}
-                        >
-                            Cancel
-                        </button>
+                        <div className={styles.buttonGroup}>
+                            <button
+                                className={styles.button}
+                                onClick={handleVerify2FA}
+                            >
+                                Verify
+                            </button>
+                            <button
+                                className={styles.buttonSecondary}
+                                onClick={handleCancel}
+                            >
+                                Cancel
+                            </button>
+                        </div>
                     </div>
                 ) : null
             ) : (
                 <div>
-                    <p>Two-factor authentication is enabled.</p>
+                    <p className={styles.status}>Two-factor authentication is enabled.</p>
                     <button
-                        className={styles.loginButton}
+                        className={styles.buttonSecondary}
                         onClick={handleDisable2FA}
                     >
                         Disable 2FA

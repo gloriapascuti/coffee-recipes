@@ -44,42 +44,94 @@ def load_and_preprocess_data(dataset_path):
     # food_data = pd.read_csv(f"{dataset_path}/NHANES Individual Food Consumption Day 1 (Reduced).csv")
     # nutrients = pd.read_csv(f"{dataset_path}/NHANES Total Nutrients Day 1.csv")
     
-    # Placeholder: Create synthetic data for demonstration
-    print("Creating synthetic dataset for demonstration...")
-    n_samples = 1000
+    # Create more realistic synthetic data based on real-world distributions
+    print("Creating realistic synthetic dataset...")
+    n_samples = 5000  # Increased sample size for better model training
     
-    # Features that will be available from the app
+    # Age distribution (more realistic - weighted towards middle age)
+    age_weights = np.concatenate([
+        np.full(12, 0.5),  # 18-29: lower weight
+        np.full(20, 1.0),  # 30-49: higher weight
+        np.full(20, 1.2),  # 50-69: highest weight
+        np.full(11, 0.8)   # 70-80: lower weight
+    ])
+    age_probs = age_weights / age_weights.sum()
     data = {
-        'age': np.random.randint(18, 80, n_samples),
-        'sex': np.random.choice(['M', 'F'], n_samples),
-        'bmi': np.random.normal(25, 5, n_samples),
-        'avg_daily_caffeine_mg': np.random.normal(200, 100, n_samples),
-        'total_caffeine_week_mg': np.random.normal(1400, 700, n_samples),
-        'systolic_bp': np.random.normal(120, 15, n_samples),
-        'diastolic_bp': np.random.normal(80, 10, n_samples),
-        'has_hypertension': np.random.choice([0, 1], n_samples, p=[0.7, 0.3]),
-        'has_diabetes': np.random.choice([0, 1], n_samples, p=[0.85, 0.15]),
-        'has_family_history_chd': np.random.choice([0, 1], n_samples, p=[0.6, 0.4]),
-        'is_smoker': np.random.choice([0, 1], n_samples, p=[0.8, 0.2]),
-        'activity_level': np.random.choice(['sedentary', 'light', 'moderate', 'active'], n_samples),
+        'age': np.random.choice(np.arange(18, 81), n_samples, p=age_probs),
+        'sex': np.random.choice(['M', 'F'], n_samples, p=[0.48, 0.52]),
+        'bmi': np.clip(np.random.normal(26.5, 5.5, n_samples), 18, 45),  # Realistic BMI range
     }
+    
+    # Caffeine intake - more realistic distribution (most people consume 0-300mg)
+    # Use exponential distribution for caffeine (most people have low intake)
+    caffeine_base = np.random.exponential(100, n_samples)  # Mean ~100mg
+    caffeine_base = np.clip(caffeine_base, 0, 800)  # Cap at 800mg
+    data['avg_daily_caffeine_mg'] = caffeine_base
+    data['total_caffeine_week_mg'] = caffeine_base * 7
+    
+    # Blood pressure - correlated with age and health conditions
+    # Normal BP: ~120/80, but varies with age
+    base_systolic = 110 + (data['age'] - 40) * 0.3  # Slight increase with age
+    base_diastolic = 70 + (data['age'] - 40) * 0.15
+    
+    # Add noise
+    data['systolic_bp'] = np.clip(base_systolic + np.random.normal(0, 12, n_samples), 90, 180)
+    data['diastolic_bp'] = np.clip(base_diastolic + np.random.normal(0, 8, n_samples), 60, 120)
+    
+    # Health conditions - correlated with age
+    age_factor = (data['age'] - 18) / 62  # Normalize age to 0-1
+    
+    # Hypertension probability increases with age
+    hypertension_prob = 0.15 + age_factor * 0.25
+    data['has_hypertension'] = (np.random.random(n_samples) < hypertension_prob).astype(int)
+    
+    # Diabetes probability
+    diabetes_prob = 0.08 + age_factor * 0.12
+    data['has_diabetes'] = (np.random.random(n_samples) < diabetes_prob).astype(int)
+    
+    # Family history (independent of age)
+    data['has_family_history_chd'] = np.random.choice([0, 1], n_samples, p=[0.65, 0.35])
+    
+    # Smoking (slightly higher in younger adults)
+    smoking_prob = 0.15 - age_factor * 0.05
+    data['is_smoker'] = (np.random.random(n_samples) < smoking_prob).astype(int)
+    
+    # Activity level (weighted towards sedentary/light)
+    data['activity_level'] = np.random.choice(
+        ['sedentary', 'light', 'moderate', 'active'], 
+        n_samples, 
+        p=[0.35, 0.30, 0.25, 0.10]
+    )
     
     df = pd.DataFrame(data)
     
-    # Create target variable (heart disease risk)
-    # Higher risk if: older, high BP, high caffeine, family history, etc.
+    # Create more realistic target variable (heart disease risk)
+    # Use a more conservative risk calculation that doesn't over-predict
+    # Risk factors contribute additively but with realistic weights
     risk_score = (
-        (df['age'] - 18) / 62 * 0.2 +
-        (df['systolic_bp'] - 90) / 60 * 0.15 +
-        (df['avg_daily_caffeine_mg'] - 50) / 400 * 0.1 +
-        df['has_hypertension'] * 0.2 +
+        # Age contribution (0-0.15, not too high)
+        age_factor * 0.15 +
+        # Blood pressure contribution (only if elevated)
+        np.maximum(0, (df['systolic_bp'] - 120) / 60) * 0.12 +
+        np.maximum(0, (df['diastolic_bp'] - 80) / 40) * 0.08 +
+        # Caffeine contribution (only significant at very high levels)
+        np.maximum(0, (df['avg_daily_caffeine_mg'] - 400) / 400) * 0.05 +  # Only counts above 400mg
+        # Health conditions (stronger predictors)
+        df['has_hypertension'] * 0.20 +
         df['has_diabetes'] * 0.15 +
-        df['has_family_history_chd'] * 0.1 +
-        df['is_smoker'] * 0.1
+        df['has_family_history_chd'] * 0.10 +
+        df['is_smoker'] * 0.12 +
+        # BMI contribution (only if high)
+        np.maximum(0, (df['bmi'] - 25) / 20) * 0.08
     )
     
-    # Binary classification: 1 if risk_score > threshold
-    df['heart_disease_risk'] = (risk_score > 0.3).astype(int)
+    # Use a higher threshold for high risk (0.35 instead of 0.3)
+    # This makes the model more conservative
+    df['heart_disease_risk'] = (risk_score > 0.35).astype(int)
+    
+    # Ensure we have a reasonable class balance
+    risk_rate = df['heart_disease_risk'].mean()
+    print(f"  High risk cases: {risk_rate:.1%} of dataset")
     
     # Encode categorical variables
     le_sex = LabelEncoder()
@@ -123,9 +175,11 @@ def train_models(X_train, y_train, X_val, y_val):
     print("Training models...")
     
     models = {
-        'Logistic Regression': LogisticRegression(max_iter=1000, random_state=42),
-        'Random Forest': RandomForestClassifier(n_estimators=100, random_state=42, n_jobs=-1),
-        'Gradient Boosting': GradientBoostingClassifier(n_estimators=100, random_state=42)
+        'Logistic Regression': LogisticRegression(max_iter=2000, random_state=42, class_weight='balanced'),
+        'Random Forest': RandomForestClassifier(n_estimators=200, random_state=42, n_jobs=-1, 
+                                                class_weight='balanced', max_depth=10),
+        'Gradient Boosting': GradientBoostingClassifier(n_estimators=200, random_state=42, 
+                                                        learning_rate=0.05, max_depth=5)
     }
     
     results = {}

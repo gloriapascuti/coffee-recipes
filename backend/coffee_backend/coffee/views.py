@@ -1094,32 +1094,25 @@ def generate_prediction(request):
                 'measured_at': latest_bp.measured_at
             }
     
-    # For now, return a mock prediction
-    # TODO: Integrate actual ML model
-    risk_probability = 0.15  # Placeholder
-    if health_profile:
-        # Simple heuristic based on health factors
-        if health_profile.has_hypertension:
-            risk_probability += 0.1
-        if health_profile.has_diabetes:
-            risk_probability += 0.1
-        if health_profile.has_family_history_chd:
-            risk_probability += 0.05
-        if health_profile.is_smoker:
-            risk_probability += 0.1
-        if avg_daily_caffeine > 400:  # High caffeine
-            risk_probability += 0.05
+    # Use ML model for prediction
+    from .ml_model_utils import predict_heart_disease_risk
     
-    # Clamp between 0 and 1
-    risk_probability = min(max(risk_probability, 0.0), 1.0)
+    period_days = (now - start_date).days
+    if period_days == 0:
+        period_days = 1  # Avoid division by zero
     
-    # Determine risk category
-    if risk_probability < 0.2:
-        risk_category = 'low'
-    elif risk_probability < 0.5:
-        risk_category = 'moderate'
-    else:
-        risk_category = 'high'
+    # Get ML model prediction
+    ml_prediction = predict_heart_disease_risk(
+        health_profile=health_profile,
+        bp_entry=bp_entry,
+        avg_daily_caffeine=avg_daily_caffeine,
+        total_caffeine_week=total_caffeine,
+        period_days=period_days
+    )
+    
+    risk_probability = ml_prediction['risk_probability']
+    risk_percentage = ml_prediction['risk_percentage']
+    risk_category = ml_prediction['risk_category']
     
     # Check missing fields
     missing_fields = []
@@ -1135,10 +1128,60 @@ def generate_prediction(request):
         if not health_profile.weight_kg:
             missing_fields.append('weight_kg')
     
+    # Calculate risk factors breakdown for charts
+    risk_factors = {}
+    total_risk_points = 0
+    
+    # Caffeine contribution (normalized to percentage)
+    if avg_daily_caffeine > 0:
+        caffeine_risk = min((avg_daily_caffeine / 600) * 100, 100)  # 600mg = very high risk
+        risk_factors['Caffeine Intake'] = round(caffeine_risk, 1)
+        total_risk_points += caffeine_risk
+    
+    # Blood pressure contribution
+    if bp_entry:
+        bp_risk = 0
+        # bp_entry is always a dict in this function
+        systolic = bp_entry.get('systolic')
+        diastolic = bp_entry.get('diastolic')
+        
+        if systolic and diastolic:
+            if systolic >= 140 or diastolic >= 90:
+                bp_risk = 40  # High BP
+            elif systolic >= 130 or diastolic >= 85:
+                bp_risk = 20  # Elevated BP
+            else:
+                bp_risk = 5  # Normal but still a factor
+            risk_factors['Blood Pressure'] = round(bp_risk, 1)
+            total_risk_points += bp_risk
+    
+    # Health profile factors
+    if health_profile:
+        if health_profile.has_family_history_chd:
+            risk_factors['Family History'] = 15
+            total_risk_points += 15
+        if health_profile.has_hypertension:
+            risk_factors['Hypertension'] = 20
+            total_risk_points += 20
+        if health_profile.has_diabetes:
+            risk_factors['Diabetes'] = 15
+            total_risk_points += 15
+        if health_profile.is_smoker:
+            risk_factors['Smoking'] = 25
+            total_risk_points += 25
+        if health_profile.has_high_cholesterol:
+            risk_factors['High Cholesterol'] = 10
+            total_risk_points += 10
+    
+    # Normalize risk factors to percentages
+    if total_risk_points > 0:
+        for factor in risk_factors:
+            risk_factors[factor] = round((risk_factors[factor] / total_risk_points) * 100, 1)
+    
     return Response({
         'period': period,
         'risk_probability': round(risk_probability, 3),
-        'risk_percentage': round(risk_probability * 100, 1),
+        'risk_percentage': risk_percentage,
         'risk_category': risk_category,
         'caffeine_stats': {
             'total_mg': round(total_caffeine, 2),
@@ -1146,6 +1189,7 @@ def generate_prediction(request):
             'num_coffees': num_coffees
         },
         'used_bp': bp_entry,
+        'risk_factors': risk_factors,
         'missing_fields': missing_fields,
-        'note': 'This is a preliminary prediction. A trained ML model will be integrated for accurate risk assessment.'
+        'note': 'This prediction is generated using a trained machine learning model based on your health profile, caffeine consumption, and blood pressure data.'
     })

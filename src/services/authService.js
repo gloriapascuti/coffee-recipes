@@ -64,6 +64,10 @@ export const getProfile = async () => {
   try {
     const token = localStorage.getItem('access_token');
     
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+    
     const response = await fetch(`${API_URL}/users/profile/`, {
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -72,8 +76,8 @@ export const getProfile = async () => {
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.detail || 'Failed to fetch profile');
+      const errorData = await response.json().catch(() => ({ detail: 'Failed to fetch profile' }));
+      throw new Error(errorData.detail || `Failed to fetch profile (${response.status})`);
     }
 
     const data = await response.json();

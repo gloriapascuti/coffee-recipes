@@ -13,7 +13,8 @@ import BrewingAndSyrups from './Page1/BrewingAndSyrups';
 
 import RUD from './Page2/RUD';
 import FileUploader from './Page2/FileUploader';
-import ConsumedCoffees from './Page3/ConsumedCoffees';
+import MyRecipes from './Page3/MyRecipes';
+import ConsumedCoffees from './Page4/ConsumedCoffees';
 
 import NavigationFooter from './Page1/NavigationFooter';
 import EntryPage from './authentication/EntryPage';
@@ -73,6 +74,18 @@ function App() {
                         component={() => (
                             <>
                                 <Header/>
+                                <MyRecipes/>
+                                <NavigationFooter/>
+                            </>
+                        )}
+                    />
+                    
+                    {/* Page 4 Route */}
+                    <PrivateRoute
+                        path="/page4"
+                        component={() => (
+                            <>
+                                <Header/>
                                 <ConsumedCoffees/>
                                 <NavigationFooter/>
                             </>
@@ -94,7 +107,15 @@ function App() {
                     <PrivateRoute path="/profile" component={Profile} />
                     <PrivateRoute path="/recommendations" component={Recommendations} />
                     <PrivateRoute path="/community" component={Community} />
-                    <Redirect to="/" />
+                    {/* Only redirect to / if no route matches and user is not authenticated */}
+                    <Route path="*" render={({ location }) => {
+                        const hasToken = localStorage.getItem('access_token');
+                        if (hasToken) {
+                            // User is authenticated but on unknown route, redirect to page1
+                            return <Redirect to="/page1" />;
+                        }
+                        return <Redirect to="/" />;
+                    }} />
                 </Switch>
             </CoffeeProvider>
         </Router>

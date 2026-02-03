@@ -18,6 +18,7 @@ const Header = () => {
         if (path.includes('/page1')) return 1;
         if (path.includes('/page2')) return 2;
         if (path.includes('/page3')) return 3;
+        if (path.includes('/page4')) return 4;
         return 1; // default to page 1
     };
 
@@ -34,6 +35,11 @@ const Header = () => {
                 description: "Explore our collection of coffee recipes, statistics, and brewing methods"
             };
         } else if (path.includes('/page3')) {
+            return {
+                title: "My Recipes & Favorites",
+                description: "Manage your coffee recipes, add new ones, edit or delete them, and view your favorites"
+            };
+        } else if (path.includes('/page4')) {
             return {
                 title: "My Consumed Coffees & Predictions",
                 description: "Track your coffee consumption and get heart disease risk predictions"
@@ -70,6 +76,12 @@ const Header = () => {
                             className={`${styles.page} ${currentPage === 3 ? styles.activePage : ''}`}
                         >
                             Page 3
+                        </Link>
+                        <Link 
+                            to="/page4" 
+                            className={`${styles.page} ${currentPage === 4 ? styles.activePage : ''}`}
+                        >
+                            Page 4
                         </Link>
                         <Link to="/recommendations" className={styles.recommendationsButton}>
                             Recommendations

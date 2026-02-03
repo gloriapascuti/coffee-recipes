@@ -4,29 +4,29 @@ import TwoFactorSettings from './TwoFactorSettings';
 import HealthProfile from './HealthProfile';
 import AdminUserTable from '../components/AdminUserTable';
 import UserNotification from '../components/UserNotification';
-import styles from './styles/Login.module.css';
+import styles from './styles/UserSettings.module.css';
 
 const UserSettings = () => {
     const history = useHistory();
 
     return (
-        <div style={{ maxWidth: '1200px', margin: '20px auto', fontFamily: 'Georgia' }}>
+        <div className={styles.container}>
             <button 
                 onClick={() => history.goBack()} 
                 className={styles.backButton}
             >
                 ← Back
             </button>
-            <h1>User Settings</h1>
+            <h1 className={styles.title}>User Settings</h1>
             
             {/* User notification for investigation status */}
             <UserNotification />
             
-            <div style={{ marginTop: '20px' }}>
+            <div className={styles.section}>
                 <TwoFactorSettings />
             </div>
             
-            <div style={{ marginTop: '40px' }}>
+            <div className={styles.section}>
                 <HealthProfile />
             </div>
             
