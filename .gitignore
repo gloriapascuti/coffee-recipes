@@ -16,6 +16,11 @@
 *.sqlite3.bak
 *.db
 
+# secrets
+aws_access_key
+*.key
+*.pem
+
 # misc
 .DS_Store
 .env.local
