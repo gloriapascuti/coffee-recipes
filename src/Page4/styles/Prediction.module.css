@@ -1,0 +1,483 @@
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    font-family: Georgia, serif;
+}
+
+.title {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    color: #333;
+    text-align: center;
+    font-family: Georgia, serif;
+    border-bottom: 2px solid #8B4513;
+    padding-bottom: 0.5rem;
+}
+
+.formSection {
+    margin-bottom: 2rem;
+}
+
+.periodSelector {
+    margin-bottom: 2rem;
+}
+
+.periodSelector label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #333;
+    font-family: Georgia, serif;
+}
+
+.radioGroup {
+    display: flex;
+    gap: 2rem;
+    margin-top: 0.5rem;
+}
+
+.radioGroup label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-weight: normal;
+}
+
+.bpSection {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+}
+
+.bpSection h3 {
+    margin-top: 0;
+    color: #8B4513;
+    font-family: Georgia, serif;
+    border-bottom: 2px solid #8B4513;
+    padding-bottom: 0.5rem;
+}
+
+.helpText {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.bpInputs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+}
+
+.inputGroup {
+    display: flex;
+    flex-direction: column;
+}
+
+.inputGroup label {
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #333;
+    font-family: Georgia, serif;
+}
+
+.inputGroup input {
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-family: Georgia, serif;
+    transition: border-color 0.3s;
+}
+
+.inputGroup input:focus {
+    outline: none;
+    border-color: #8B4513;
+    box-shadow: 0 0 0 2px rgba(139, 69, 19, 0.2);
+}
+
+.inputError {
+    border-color: #f44336 !important;
+    box-shadow: 0 0 0 2px rgba(244, 67, 54, 0.2) !important;
+}
+
+.errorText {
+    color: #f44336;
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+    font-family: Georgia, serif;
+}
+
+.tooltip {
+    cursor: help;
+    color: #8B4513;
+    font-size: 0.9rem;
+    margin-left: 0.25rem;
+    position: relative;
+}
+
+.tooltip:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: white;
+    padding: 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    z-index: 1000;
+    margin-bottom: 0.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.tooltip:hover::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: #333;
+    margin-bottom: -5px;
+}
+
+.generateButton {
+    background-color: #8B4513;
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 4px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    width: 100%;
+    transition: background-color 0.3s;
+    font-family: Georgia, serif;
+    font-weight: bold;
+}
+
+.generateButton:hover:not(:disabled) {
+    background-color: #A0522D;
+}
+
+.generateButton:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.generateButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.error {
+    background-color: #ffebee;
+    color: #c62828;
+    padding: 1rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+}
+
+.results {
+    margin-top: 2rem;
+}
+
+.riskCard {
+    border: 3px solid;
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    margin-bottom: 2rem;
+    background: linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%);
+}
+
+.riskHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.riskHeader h3 {
+    margin: 0;
+    color: #333;
+}
+
+.riskBadge {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    color: white;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.riskPercentage {
+    font-size: 4rem;
+    font-weight: bold;
+    color: #333;
+    margin: 1rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.trendIndicator {
+    font-size: 2rem;
+    display: inline-flex;
+    align-items: center;
+}
+
+.trendUp {
+    color: #f44336;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.trendDown {
+    color: #4caf50;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.trendSame {
+    color: #666;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.6;
+    }
+}
+
+.comparisonInfo {
+    color: #666;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    font-style: italic;
+}
+
+.periodInfo {
+    color: #666;
+    font-size: 1rem;
+}
+
+.statsSection {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+}
+
+.statsSection h4 {
+    margin-top: 0;
+    color: #333;
+}
+
+.statsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.statItem {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    background: white;
+    border-radius: 4px;
+    border: 1px solid #e0e0e0;
+}
+
+.statLabel {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+}
+
+.statValue {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #8B4513;
+}
+
+.bpInfo {
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background-color: #e3f2fd;
+    border-radius: 8px;
+}
+
+.bpInfo h4 {
+    margin-top: 0;
+    color: #333;
+}
+
+.warning {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background-color: #fff3cd;
+    border-left: 4px solid #ffc107;
+    border-radius: 4px;
+}
+
+.warning h4 {
+    margin-top: 0;
+    color: #856404;
+}
+
+.warning ul {
+    margin: 1rem 0;
+    padding-left: 1.5rem;
+}
+
+.warning li {
+    margin: 0.5rem 0;
+    color: #856404;
+}
+
+.settingsLink {
+    display: inline-block;
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    background-color: #ffc107;
+    color: #333;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: 500;
+    transition: background-color 0.3s;
+}
+
+.settingsLink:hover {
+    background-color: #ffb300;
+}
+
+.disclaimer {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.disclaimer strong {
+    color: #333;
+}
+
+.note {
+    margin-top: 1rem;
+    font-style: italic;
+    color: #999;
+}
+
+.analysisSection {
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+}
+
+.analysisButton {
+    background: linear-gradient(135deg, #8B4513, #D2691E);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.3s;
+    font-family: Georgia, serif;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.analysisButton:hover {
+    background: linear-gradient(135deg, #A0522D, #F4A460);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.analysisContent {
+    margin-top: 1.5rem;
+    padding: 2rem;
+    background: #f9f9f9;
+    border-radius: 8px;
+    border: 2px solid #8B4513;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.analysisText {
+    font-family: Georgia, serif;
+    line-height: 1.8;
+    color: #333;
+    font-size: 1rem;
+}
+
+.analysisHeading {
+    color: #8B4513;
+    font-size: 1.4rem;
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid #8B4513;
+    padding-bottom: 0.5rem;
+    font-family: Georgia, serif;
+}
+
+.analysisHeading:first-child {
+    margin-top: 0;
+}
+
+.analysisParagraph {
+    margin: 1rem 0;
+    text-align: justify;
+}
+
+.analysisBold {
+    color: #8B4513;
+    font-weight: bold;
+}
+
+.analysisListItem {
+    margin: 0.75rem 0;
+    padding-left: 1.5rem;
+    position: relative;
+}
+
+.analysisListItem::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: #8B4513;
+    font-weight: bold;
+    font-size: 1.2rem;
+}

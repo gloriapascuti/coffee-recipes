@@ -444,37 +444,39 @@ export const CoffeeProvider = ({ children }) => {
             setCoffees(OfflineService.getLocalCoffees());
         } else {
             setIsOfflineMode(false);
-            if (accessToken) {
-                fetchData();
-                if (!isSyncing) {
-                    setIsSyncing(true);
-                    OfflineService.processPendingOperations({
-                        addCoffee,
-                        editCoffee,
-                        deleteCoffee,
-                    }).finally(() => {
-                        setIsSyncing(false);
-                        fetchData();
-                    });
-                }
-            } else {
-                setCoffees([]);
+            // Fetch data even without token (API allows read-only access)
+            fetchData();
+            if (accessToken && !isSyncing) {
+                setIsSyncing(true);
+                OfflineService.processPendingOperations({
+                    addCoffee,
+                    editCoffee,
+                    deleteCoffee,
+                }).finally(() => {
+                    setIsSyncing(false);
+                    fetchData();
+                });
             }
         }
     }, [isOnline, isServerOnline, accessToken]);
 
     // FETCH list
     const fetchData = async () => {
-        if (!accessToken) return;
+        // Allow fetching even without token (API allows read-only access)
         try {
             const resp = await fetch(COFFEE_URL, {
                 headers: authHeaders(),
             });
+            console.log("Fetch response status:", resp.status, resp.ok);
             if (resp.ok) {
                 const json = await resp.json();
+                console.log("Fetched coffees count:", Array.isArray(json) ? json.length : (Array.isArray(json.results) ? json.results.length : 0));
                 const list = Array.isArray(json) ? json : Array.isArray(json.results) ? json.results : [];
+                console.log("Setting coffees, count:", list.length);
                 setCoffees(list);
                 OfflineService.saveLocalCoffees(list);
+            } else {
+                console.error("Fetch failed with status:", resp.status, await resp.text());
             }
         } catch (err) {
             console.error("Error fetching coffees:", err);
@@ -631,6 +633,7 @@ export const CoffeeProvider = ({ children }) => {
             addCoffee,
             editCoffee,
             deleteCoffee,
+            fetchData,
             isOfflineMode,
             isOnline,
             isServerOnline,

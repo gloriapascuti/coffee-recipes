@@ -93,8 +93,12 @@ class Command(BaseCommand):
                 self.stdout.write(f"\nDuplicate group: {key}")
                 self.stdout.write("-" * 40)
                 
-                # Sort by ID to keep the oldest (first created)
-                coffee_group.sort(key=lambda x: x.id)
+                # Sort to show which one will be kept (same logic as removal)
+                coffee_group.sort(key=lambda x: (
+                    not x.is_community_winner,
+                    -x.likes.count(),
+                    x.id
+                ))
                 
                 # Show which one will be kept
                 kept_coffee = coffee_group[0]
@@ -127,10 +131,17 @@ class Command(BaseCommand):
         
         for key, coffee_group in duplicates.items():
             if len(coffee_group) > 1:
-                # Sort by ID to keep the oldest (first created)
-                coffee_group.sort(key=lambda x: x.id)
+                # Sort to keep the best one:
+                # 1. Community winners first
+                # 2. Then by number of likes (descending)
+                # 3. Then by ID (oldest first)
+                coffee_group.sort(key=lambda x: (
+                    not x.is_community_winner,  # False (0) comes before True (1), so winners first
+                    -x.likes.count(),  # Negative for descending order
+                    x.id  # Oldest first
+                ))
                 
-                # Keep the first one, delete the rest
+                # Keep the first one (best one), delete the rest
                 kept_coffee = coffee_group[0]
                 to_delete = coffee_group[1:]
                 

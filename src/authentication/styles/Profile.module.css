@@ -46,6 +46,17 @@
     padding: 50px;
     font-size: 1.2rem;
     color: #666;
+    font-family: Georgia, serif;
+}
+
+.errorMessage {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 20px 0;
+    border: 1px solid #f5c6cb;
+    text-align: center;
 }
 
 .successMessage {
