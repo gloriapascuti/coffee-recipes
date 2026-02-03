@@ -11,6 +11,11 @@
 # production
 /build
 
+# database
+*.sqlite3
+*.sqlite3.bak
+*.db
+
 # misc
 .DS_Store
 .env.local
