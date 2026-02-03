@@ -21,9 +21,8 @@ import Register from './authentication/Register';
 import PrivateRoute from './authentication/PrivateRoute';
 import UserSettings from './authentication/UserSettings';
 import Profile from './authentication/Profile';
-import Recommendations from './Page3/Recommendations';
-import Community from './Page3/Community';
-import MyRecipe from './Page3/MyRecipe';
+import Recommendations from './components/Recommendations';
+import Community from './components/Community';
 import './App.css';
 import './components/StatusIndicator.css';
 
@@ -62,18 +61,6 @@ function App() {
                                 <Header/>
                                 <RUD/>
                                 <FileUploader/>
-                                <NavigationFooter/>
-                            </>
-                        )}
-                    />
-                    
-                    {/* Page 3 Route */}
-                    <PrivateRoute
-                        path="/page3"
-                        component={() => (
-                            <>
-                                <Header/>
-                                <MyRecipe/>
                                 <NavigationFooter/>
                             </>
                         )}

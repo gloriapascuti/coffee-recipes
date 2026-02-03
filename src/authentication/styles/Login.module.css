@@ -9,3 +9,23 @@
     font-family: Georgia;
     margin-top: 5px;
 }
+
+.backButton {
+    background: linear-gradient(135deg, #8B4513, #D2691E);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 20px;
+    font-family: Georgia, serif;
+}
+
+.backButton:hover {
+    background: linear-gradient(135deg, #A0522D, #F4A460);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}

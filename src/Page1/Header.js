@@ -17,7 +17,6 @@ const Header = () => {
         const path = location.pathname;
         if (path.includes('/page1')) return 1;
         if (path.includes('/page2')) return 2;
-        if (path.includes('/page3')) return 3;
         return 1; // default to page 1
     };
 
@@ -32,11 +31,6 @@ const Header = () => {
             return {
                 title: "All recipes",
                 description: "Explore our collection of coffee recipes, statistics, and brewing methods"
-            };
-        } else if (path.includes('/page3')) {
-            return {
-                title: "My Custom Recipes",
-                description: "Create, manage, and share your personalized coffee recipes"
             };
         }
         return {
@@ -64,12 +58,6 @@ const Header = () => {
                             className={`${styles.page} ${currentPage === 2 ? styles.activePage : ''}`}
                         >
                             Page 2
-                        </Link>
-                        <Link 
-                            to="/page3" 
-                            className={`${styles.page} ${currentPage === 3 ? styles.activePage : ''}`}
-                        >
-                            Page 3
                         </Link>
                         <Link to="/recommendations" className={styles.recommendationsButton}>
                             Recommendations
