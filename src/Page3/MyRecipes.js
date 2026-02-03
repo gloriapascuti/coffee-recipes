@@ -77,7 +77,7 @@ export default function MyRecipes() {
                         const coffeeUserId = typeof c.user === 'object' ? c.user.id : c.user;
                         return coffeeUserId === userId;
                     });
-                    setMyRecipes(userRecipes);
+        setMyRecipes(userRecipes);
                 }
             } else {
                 // No user ID, use empty array

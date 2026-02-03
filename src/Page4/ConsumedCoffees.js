@@ -336,18 +336,18 @@ export default function ConsumedCoffees() {
                     const alreadyInList = isRecipeInMyList(consumed.coffee);
                     
                     return (
-                        <div key={consumed.id} className={styles.coffeeCard}>
-                            <div className={styles.coffeeInfo}>
-                                <h3>{consumed.coffee.name}</h3>
-                                <p className={styles.coffeeOrigin}>{consumed.coffee.origin.name}</p>
-                                <p className={styles.coffeeDescription}>{consumed.coffee.description}</p>
-                                <p className={styles.caffeineInfo}>
-                                    Caffeine: ~{consumed.coffee.caffeine_mg || 95}mg
-                                </p>
-                                <p className={styles.consumedTime}>
-                                    Consumed: {formatDate(consumed.consumed_at)}
-                                </p>
-                            </div>
+                    <div key={consumed.id} className={styles.coffeeCard}>
+                        <div className={styles.coffeeInfo}>
+                            <h3>{consumed.coffee.name}</h3>
+                            <p className={styles.coffeeOrigin}>{consumed.coffee.origin.name}</p>
+                            <p className={styles.coffeeDescription}>{consumed.coffee.description}</p>
+                            <p className={styles.caffeineInfo}>
+                                Caffeine: ~{consumed.coffee.caffeine_mg || 95}mg
+                            </p>
+                            <p className={styles.consumedTime}>
+                                Consumed: {formatDate(consumed.consumed_at)}
+                            </p>
+                        </div>
                             <div className={styles.cardActions}>
                                 {isCustomRecipe && !alreadyInList && (
                                     <button
@@ -358,13 +358,13 @@ export default function ConsumedCoffees() {
                                         Add to Recipe List
                                     </button>
                                 )}
-                                <button
-                                    className={styles.removeButton}
-                                    onClick={() => handleRemoveConsumed(consumed.id)}
-                                >
-                                    Remove
-                                </button>
-                            </div>
+                        <button
+                            className={styles.removeButton}
+                            onClick={() => handleRemoveConsumed(consumed.id)}
+                        >
+                            Remove
+                        </button>
+                    </div>
                         </div>
                     );
                 })}
@@ -434,8 +434,8 @@ export default function ConsumedCoffees() {
                 <div className={styles.addCoffeeSection}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                         <p className={styles.helpText} style={{ margin: 0 }}>
-                            Select a coffee recipe below to add it to your consumed list:
-                        </p>
+                        Select a coffee recipe below to add it to your consumed list:
+                    </p>
                         <button
                             className={styles.addButton}
                             onClick={() => setShowCustomForm(!showCustomForm)}
@@ -580,20 +580,20 @@ export default function ConsumedCoffees() {
                     )}
                     
                     {!showCustomForm && (
-                        <div className={styles.recipeGrid}>
-                            {coffees.slice(0, 20).map((coffee) => (
-                                <div key={coffee.id} className={styles.recipeCard}>
-                                    <h4>{coffee.name}</h4>
-                                    <p className={styles.recipeOrigin}>{coffee.origin.name}</p>
-                                    <button
-                                        className={styles.addButton}
-                                        onClick={() => handleAddConsumed(coffee.id)}
-                                    >
-                                        + Add to Consumed
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
+                    <div className={styles.recipeGrid}>
+                        {coffees.slice(0, 20).map((coffee) => (
+                            <div key={coffee.id} className={styles.recipeCard}>
+                                <h4>{coffee.name}</h4>
+                                <p className={styles.recipeOrigin}>{coffee.origin.name}</p>
+                                <button
+                                    className={styles.addButton}
+                                    onClick={() => handleAddConsumed(coffee.id)}
+                                >
+                                    + Add to Consumed
+                                </button>
+                            </div>
+                        ))}
+                    </div>
                     )}
                 </div>
             </div>

@@ -154,7 +154,10 @@ export default function Prediction({ consumedCoffees }) {
         
         // Risk Overview
         analysisText.push(`## Risk Assessment Summary`);
-        analysisText.push(`\nYour heart disease risk is **${prediction.risk_percentage}%** over the ${prediction.period} period, which is classified as **${getRiskLabel(prediction.risk_category)}**.`);
+        const riskPercent = typeof prediction.risk_percentage === 'number' 
+            ? prediction.risk_percentage.toFixed(2) 
+            : parseFloat(prediction.risk_percentage || 0).toFixed(2);
+        analysisText.push(`\nYour heart disease risk is **${riskPercent}%** over the ${prediction.period} period, which is classified as **${getRiskLabel(prediction.risk_category)}**.`);
         
         // Caffeine Analysis
         const avgDaily = prediction.caffeine_stats.avg_daily_mg;
@@ -403,7 +406,9 @@ export default function Prediction({ consumedCoffees }) {
                             </span>
                         </div>
                         <div className={styles.riskPercentage}>
-                            {prediction.risk_percentage}%
+                            {typeof prediction.risk_percentage === 'number' 
+                                ? prediction.risk_percentage.toFixed(2) 
+                                : parseFloat(prediction.risk_percentage || 0).toFixed(2)}%
                             {lastPrediction && (
                                 <span className={styles.trendIndicator}>
                                     {prediction.risk_percentage > lastPrediction.risk_percentage ? (
@@ -421,7 +426,9 @@ export default function Prediction({ consumedCoffees }) {
                         </p>
                         {lastPrediction && (
                             <p className={styles.comparisonInfo}>
-                                Previous: {lastPrediction.risk_percentage}% ({lastPrediction.period})
+                                Previous: {typeof lastPrediction.risk_percentage === 'number' 
+                                    ? lastPrediction.risk_percentage.toFixed(2) 
+                                    : parseFloat(lastPrediction.risk_percentage || 0).toFixed(2)}% ({lastPrediction.period})
                             </p>
                         )}
                     </div>

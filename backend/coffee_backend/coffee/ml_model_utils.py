@@ -206,28 +206,33 @@ def predict_heart_disease_risk(health_profile, bp_entry, avg_daily_caffeine, tot
         # Calibrate the probability to a more realistic risk percentage
         # The model outputs probability of being in "high risk" class, but we want a continuous risk score
         # Use a calibration function to map model probability to realistic risk percentage
-        # This prevents over-prediction of risk
+        # This produces more detailed, realistic percentages (e.g., 7.3%, 34.7%) instead of rounded values
         
-        # Calibration: scale and transform the probability
-        # For low probabilities (<0.3), scale more conservatively
-        # For higher probabilities, use more direct mapping
-        if raw_probability < 0.1:
-            # Very low risk - scale down further
-            risk_probability = raw_probability * 0.3  # Scale down by 70%
-        elif raw_probability < 0.3:
-            # Low-moderate risk - scale down moderately
-            risk_probability = 0.03 + (raw_probability - 0.1) * 0.35  # Map 0.1-0.3 to 0.03-0.10
-        elif raw_probability < 0.6:
-            # Moderate risk - use more direct mapping
-            risk_probability = 0.10 + (raw_probability - 0.3) * 0.40  # Map 0.3-0.6 to 0.10-0.22
+        # Improved calibration: map model probability to realistic risk range (2% to 45%)
+        # This ensures we get varied, detailed percentages
+        if raw_probability < 0.05:
+            # Very low risk - map to 2-5% range
+            risk_probability = 0.02 + (raw_probability / 0.05) * 0.03  # Map 0-0.05 to 0.02-0.05
+        elif raw_probability < 0.15:
+            # Low risk - map to 5-12% range
+            risk_probability = 0.05 + ((raw_probability - 0.05) / 0.10) * 0.07  # Map 0.05-0.15 to 0.05-0.12
+        elif raw_probability < 0.35:
+            # Low-moderate risk - map to 12-22% range
+            risk_probability = 0.12 + ((raw_probability - 0.15) / 0.20) * 0.10  # Map 0.15-0.35 to 0.12-0.22
+        elif raw_probability < 0.60:
+            # Moderate risk - map to 22-32% range
+            risk_probability = 0.22 + ((raw_probability - 0.35) / 0.25) * 0.10  # Map 0.35-0.60 to 0.22-0.32
+        elif raw_probability < 0.85:
+            # Moderate-high risk - map to 32-40% range
+            risk_probability = 0.32 + ((raw_probability - 0.60) / 0.25) * 0.08  # Map 0.60-0.85 to 0.32-0.40
         else:
-            # Higher risk - use direct mapping but cap at reasonable maximum
-            risk_probability = 0.22 + (raw_probability - 0.6) * 0.45  # Map 0.6-1.0 to 0.22-0.40
+            # High risk - map to 40-45% range
+            risk_probability = 0.40 + ((raw_probability - 0.85) / 0.15) * 0.05  # Map 0.85-1.0 to 0.40-0.45
         
-        # Ensure risk is between 0 and 1
-        risk_probability = max(0.0, min(1.0, risk_probability))
+        # Ensure risk is between 0.02 and 0.45 (2% to 45%)
+        risk_probability = max(0.02, min(0.45, risk_probability))
         
-        # Convert to percentage
+        # Convert to percentage with 2 decimal places for more detail
         risk_percentage = risk_probability * 100
         
         # Determine risk category based on calibrated probability
@@ -240,7 +245,7 @@ def predict_heart_disease_risk(health_profile, bp_entry, avg_daily_caffeine, tot
         
         return {
             'risk_probability': float(risk_probability),
-            'risk_percentage': round(risk_percentage, 1),
+            'risk_percentage': round(risk_percentage, 2),  # Show 2 decimal places for more detail
             'risk_category': risk_category
         }
         

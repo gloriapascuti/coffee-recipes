@@ -61,15 +61,15 @@ const Cards = () => {
                 <div className={styles.cards}>
                     {popularRecipes.length > 0 ? (
                         popularRecipes.map((recipe, index) => (
-                            <div key={recipe.id} className={getCardClassName(index)}>
-                                <div className={styles.aTerrificPiece}>
-                                    "{truncateDescription(recipe.description)}"
-                                </div>
-                                <div className={styles.avatar}>
-                                    <div className={styles.avatarIcon}></div>
-                                    <div className={styles.nameParent}>
-                                        <div className={styles.name}>{recipe.name}</div>
-                                        <div className={styles.description}>
+                        <div key={recipe.id} className={getCardClassName(index)}>
+                            <div className={styles.aTerrificPiece}>
+                                "{truncateDescription(recipe.description)}"
+                            </div>
+                            <div className={styles.avatar}>
+                                <div className={styles.avatarIcon}></div>
+                                <div className={styles.nameParent}>
+                                    <div className={styles.name}>{recipe.name}</div>
+                                    <div className={styles.description}>
                                             {recipe.origin?.name || 'Unknown Origin'}{(recipe.likes_count || 0) > 0 && ` • ${recipe.likes_count} ${recipe.likes_count === 1 ? 'like' : 'likes'}`}
                                         </div>
                                     </div>

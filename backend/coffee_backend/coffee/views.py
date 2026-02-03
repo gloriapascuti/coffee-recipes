@@ -306,8 +306,8 @@ class CoffeeViewSet(APIView):
             # Always filter out private recipes from the main list
             qs = qs.filter(is_private=False)
             
-            serializer = CoffeeSerializer(qs, many=True, context={'request': request})
-            return Response(serializer.data)
+        serializer = CoffeeSerializer(qs, many=True, context={'request': request})
+        return Response(serializer.data)
 
     def post(self, request, pk=None):
         if not request.user.is_authenticated:
