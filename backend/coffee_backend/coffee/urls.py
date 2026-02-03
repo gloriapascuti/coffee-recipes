@@ -19,6 +19,13 @@ from .views import (
     user_notifications,
     mark_notification_read,
     available_users,
+    add_consumed_coffee,
+    remove_consumed_coffee,
+    get_consumed_coffees,
+    health_profile,
+    add_blood_pressure,
+    get_blood_pressure_entries,
+    generate_prediction,
 )
 
 urlpatterns = [
@@ -69,4 +76,17 @@ urlpatterns = [
     path('notifications/', user_notifications, name='user-notifications'),
     path('notifications/<int:notification_id>/read/', mark_notification_read, name='mark-notification-read'),
     path('available-users/', available_users, name='available-users'),
+    
+    # Consumed coffees
+    path('consumed/<int:coffee_id>/', add_consumed_coffee, name='add-consumed-coffee'),
+    path('consumed/remove/<int:consumed_id>/', remove_consumed_coffee, name='remove-consumed-coffee'),
+    path('consumed/', get_consumed_coffees, name='get-consumed-coffees'),
+    
+    # Health profile
+    path('health-profile/', health_profile, name='health-profile'),
+    path('blood-pressure/', add_blood_pressure, name='add-blood-pressure'),
+    path('blood-pressure/list/', get_blood_pressure_entries, name='get-blood-pressure-entries'),
+    
+    # Prediction
+    path('prediction/', generate_prediction, name='generate-prediction'),
 ]

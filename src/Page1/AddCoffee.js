@@ -40,6 +40,18 @@ const AddCoffee = () => {
                             <span className={styles.featureIcon}>❤️</span>
                             <span>Make your own favorite list</span>
                         </div>
+                        <div className={styles.feature}>
+                            <span className={styles.featureIcon}>🏥</span>
+                            <span>ML-powered heart disease risk assessment</span>
+                        </div>
+                        <div className={styles.feature}>
+                            <span className={styles.featureIcon}>📈</span>
+                            <span>Track coffee consumption and health predictions</span>
+                        </div>
+                        <div className={styles.feature}>
+                            <span className={styles.featureIcon}>💊</span>
+                            <span>Personalized health insights based on caffeine intake</span>
+                        </div>
                     </div>
                 </div>
                 <div className={styles.imageContainer}>

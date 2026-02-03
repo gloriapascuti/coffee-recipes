@@ -91,13 +91,14 @@
     line-height: 150%;
     font-weight: 500;
     background-color: white;
-    padding: 10px 15px;
+    padding: 6px 12px;
     font-family: Georgia;
     text-decoration: none;
     color: black;
     border-radius: 5px;
     transition: all 0.3s ease;
     cursor: pointer;
+    font-size: 14px;
 }
 
 .page:hover {
@@ -126,7 +127,7 @@
     flex-direction: row;
     align-items: center;
     justify-content: center;
-    gap: 24px;
+    gap: 12px;
 }
 
 .userActions {
@@ -172,10 +173,10 @@
 .logoutButton {
     background-color: black;
     color: #e6e6e6;
-    padding: 10px 12px;
+    padding: 6px 12px;
     border: none;
     border-radius: 5px;
-    font-size: 16px;
+    font-size: 14px;
     cursor: pointer;
     font-family: Georgia;
     transition: background-color 0.3s ease;
@@ -188,10 +189,10 @@
 .profileButton {
     background-color: #8B4513;
     color: white;
-    padding: 10px 12px;
+    padding: 6px 12px;
     border: none;
     border-radius: 5px;
-    font-size: 16px;
+    font-size: 14px;
     cursor: pointer;
     font-family: Georgia;
     text-decoration: none;
@@ -207,10 +208,10 @@
 .settingsButton {
     background-color: #e6e6e6;
     color: black;
-    padding: 10px 12px;
+    padding: 6px 12px;
     border: none;
     border-radius: 5px;
-    font-size: 16px;
+    font-size: 14px;
     cursor: pointer;
     font-family: Georgia;
     text-decoration: none;
@@ -227,11 +228,12 @@
     background: linear-gradient(135deg, #8B4513, #D2691E);
     color: white;
     text-decoration: none;
-    padding: 8px 16px;
+    padding: 6px 12px;
     border-radius: 20px;
     font-weight: bold;
     transition: all 0.3s ease;
     font-family: Georgia;
+    font-size: 14px;
 }
 
 .recommendationsButton:hover {
@@ -246,11 +248,12 @@
     background: linear-gradient(135deg, #A0522D, #CD853F);
     color: white;
     text-decoration: none;
-    padding: 8px 16px;
+    padding: 6px 12px;
     border-radius: 20px;
     font-weight: bold;
     transition: all 0.3s ease;
     font-family: Georgia;
+    font-size: 14px;
 }
 
 .communityButton:hover {

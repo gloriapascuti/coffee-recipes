@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
+import { useCoffee } from '../CoffeeContext';
 import styles from './styles/Profile.module.css';
 import { getProfile, updateProfile } from '../services/authService';
 
 const Profile = () => {
     const history = useHistory();
+    const { user: contextUser } = useCoffee();
     const [user, setUser] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({
@@ -20,12 +22,14 @@ const Profile = () => {
     const [errors, setErrors] = useState({});
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
+    const [isLoadingProfile, setIsLoadingProfile] = useState(true);
 
     useEffect(() => {
         fetchProfile();
     }, []);
 
     const fetchProfile = async () => {
+        setIsLoadingProfile(true);
         try {
             const userData = await getProfile();
             setUser(userData);
@@ -39,9 +43,29 @@ const Profile = () => {
                 new_password: '',
                 new_password_confirm: ''
             });
+            setMessage('');
         } catch (error) {
             console.error('Error fetching profile:', error);
             setMessage('Failed to load profile. Please try again.');
+            // Try to use user from context as fallback
+            if (contextUser) {
+                const storedUsername = localStorage.getItem('username');
+                const storedEmail = localStorage.getItem('email') || '';
+                setUser({
+                    username: storedUsername || contextUser.username || '',
+                    email: storedEmail || '',
+                    first_name: '',
+                    last_name: '',
+                    phone_number: '',
+                    address: '',
+                    date_joined: new Date().toISOString(),
+                    last_login: null,
+                    is_profile_complete: false,
+                    missing_fields: []
+                });
+            }
+        } finally {
+            setIsLoadingProfile(false);
         }
     };
 
@@ -125,8 +149,27 @@ const Profile = () => {
         }
     };
 
-    if (!user) {
+    if (isLoadingProfile) {
         return <div className={styles.loading}>Loading profile...</div>;
+    }
+
+    if (!user) {
+        return (
+            <div className={styles.profileContainer}>
+                <div className={styles.profileCard}>
+                    <button 
+                        onClick={() => history.goBack()} 
+                        className={styles.backButton}
+                    >
+                        ← Back
+                    </button>
+                    <h1 className={styles.title}>My Profile</h1>
+                    <div className={styles.errorMessage}>
+                        {message || 'Failed to load profile. Please try refreshing the page.'}
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     return (
