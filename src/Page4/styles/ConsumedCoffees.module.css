@@ -91,6 +91,13 @@
     transition: box-shadow 0.3s;
 }
 
+.cardActions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-end;
+}
+
 .coffeeCard:hover {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
@@ -138,10 +145,28 @@
     cursor: pointer;
     font-size: 0.9rem;
     transition: background-color 0.3s;
+    white-space: nowrap;
 }
 
 .removeButton:hover {
     background-color: #d32f2f;
+}
+
+.addToRecipeButton {
+    background-color: #8B4513;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.3s;
+    white-space: nowrap;
+    font-family: Georgia, serif;
+}
+
+.addToRecipeButton:hover {
+    background-color: #A0522D;
 }
 
 .addCoffeeSection {
@@ -194,4 +219,97 @@
 
 .addButton:hover {
     background-color: #A0522D;
+}
+
+.customForm {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.formGroup {
+    margin-bottom: 1.5rem;
+}
+
+.formGroup label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #333;
+    font-size: 0.95rem;
+}
+
+.formGroup input[type="text"],
+.formGroup input[type="number"],
+.formGroup select,
+.formGroup textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.formGroup input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+.formGroup input[type="number"]::-webkit-outer-spin-button,
+.formGroup input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.formGroup textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.formGroup select {
+    cursor: pointer;
+}
+
+.formActions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.submitButton {
+    background-color: #8B4513;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s;
+    font-family: Georgia, serif;
+    flex: 1;
+}
+
+.submitButton:hover {
+    background-color: #A0522D;
+}
+
+.cancelButton {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s;
+    font-family: Georgia, serif;
+    flex: 1;
+}
+
+.cancelButton:hover {
+    background-color: #5a6268;
 }

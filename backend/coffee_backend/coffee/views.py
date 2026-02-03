@@ -285,12 +285,31 @@ def log_coffee_operation(user, operation_type, coffee_id=None, coffee_name=None)
 class CoffeeViewSet(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
-    def get(self, request):
-        qs = Coffee.objects.select_related('origin', 'user')
-        serializer = CoffeeSerializer(qs, many=True, context={'request': request})
-        return Response(serializer.data)
+    def get(self, request, pk=None):
+        if pk is not None:
+            # Get single coffee
+            coffee = get_object_or_404(Coffee, pk=pk)
+            # Check if private and user doesn't own it
+            if coffee.is_private and coffee.user != request.user:
+                return Response(
+                    {'error': 'Coffee not found'},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            serializer = CoffeeSerializer(coffee, context={'request': request})
+            return Response(serializer.data)
+        else:
+            # Get all coffees for the main recipe list
+            # IMPORTANT: Private recipes should NEVER appear in the main recipe list,
+            # even for the owner. They only appear in "My Recipes" and favorites.
+            qs = Coffee.objects.select_related('origin', 'user').all()
+            
+            # Always filter out private recipes from the main list
+            qs = qs.filter(is_private=False)
+            
+            serializer = CoffeeSerializer(qs, many=True, context={'request': request})
+            return Response(serializer.data)
 
-    def post(self, request):
+    def post(self, request, pk=None):
         if not request.user.is_authenticated:
             return Response(
                 {"detail": "Authentication credentials were not provided."},
@@ -308,8 +327,21 @@ class CoffeeViewSet(APIView):
             status=status.HTTP_201_CREATED
         )
 
-    def put(self, request, pk):
+    def put(self, request, pk=None):
+        if pk is None:
+            return Response(
+                {"detail": "Coffee ID is required for update."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         coffee = get_object_or_404(Coffee, pk=pk)
+        
+        # Check if user owns the coffee or is admin
+        if coffee.user != request.user and not request.user.is_staff:
+            return Response(
+                {"detail": "You do not have permission to edit this coffee."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
         data = request.data.copy()
         data['user'] = coffee.user.id
         serializer = CoffeeSerializer(coffee, data=data, context={'request': request})
@@ -321,8 +353,21 @@ class CoffeeViewSet(APIView):
         
         return Response(CoffeeSerializer(coffee, context={'request': request}).data)
 
-    def delete(self, request, pk):
+    def delete(self, request, pk=None):
+        if pk is None:
+            return Response(
+                {"detail": "Coffee ID is required for deletion."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         coffee = get_object_or_404(Coffee, pk=pk)
+        
+        # Check if user owns the coffee or is admin
+        if coffee.user != request.user and not request.user.is_staff:
+            return Response(
+                {"detail": "You do not have permission to delete this coffee."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
         coffee_name = coffee.name  # Store name before deletion
         coffee_id = coffee.id
         
@@ -532,6 +577,48 @@ def generate_ai_recipe(request):
         )
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_my_recipes(request):
+    """Get all recipes owned by the current user (including private ones), ordered by creation date (newest first)"""
+    # Get all recipes owned by the user, including private ones
+    # Order by id (descending) to show newest recipes first (most recently created)
+    user_recipes = Coffee.objects.filter(user=request.user).select_related('origin', 'user').order_by('-id')
+    serializer = CoffeeSerializer(user_recipes, many=True, context={'request': request})
+    return Response(serializer.data)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_favorites(request):
+    """Get all favorite coffees for the current user"""
+    # Include private recipes in favorites (user's own favorites)
+    liked_coffees = Coffee.objects.filter(likes__user=request.user).distinct()
+    serializer = CoffeeSerializer(liked_coffees, many=True, context={'request': request})
+    return Response(serializer.data)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def toggle_privacy(request, coffee_id):
+    """Toggle privacy status of a coffee recipe"""
+    try:
+        coffee = Coffee.objects.get(id=coffee_id, user=request.user)
+    except Coffee.DoesNotExist:
+        return Response(
+            {'error': 'Coffee not found or you do not have permission'},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    
+    coffee.is_private = not coffee.is_private
+    coffee.save()
+    
+    return Response({
+        'is_private': coffee.is_private,
+        'message': 'Recipe is now private' if coffee.is_private else 'Recipe is now public'
+    }, status=status.HTTP_200_OK)
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def toggle_like(request, coffee_id):
@@ -560,9 +647,18 @@ def toggle_like(request, coffee_id):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def most_popular_recipes(request):
-    """Get the 3 most liked coffee recipes"""
+    """Get the 3 most liked coffee recipes (excluding private recipes)"""
+    # Filter out private recipes (unless owned by current user)
+    base_qs = Coffee.objects.all()
+    if request.user.is_authenticated:
+        base_qs = base_qs.filter(
+            models.Q(is_private=False) | models.Q(user=request.user)
+        )
+    else:
+        base_qs = base_qs.filter(is_private=False)
+    
     # Get top 3 coffees by likes count, with a minimum of 1 like
-    popular_coffees = Coffee.objects.annotate(
+    popular_coffees = base_qs.annotate(
         total_likes=models.Count('likes')
     ).filter(
         total_likes__gt=0
@@ -574,7 +670,7 @@ def most_popular_recipes(request):
         popular_ids = [coffee.id for coffee in popular_coffees]
         
         # Get most recent recipes that aren't already in popular list
-        recent_coffees = Coffee.objects.exclude(
+        recent_coffees = base_qs.exclude(
             id__in=popular_ids
         ).order_by('-id')[:remaining_count]
         
@@ -931,6 +1027,41 @@ def available_users(request):
 
 # Consumed Coffee Endpoints
 
+def calculate_caffeine_from_grams(grams, coffee_type):
+    """
+    Calculate caffeine content from grams of coffee beans using the formula:
+    Caffeine (mg) = 1000 x D x G x R x B
+    
+    Where:
+    D = dose in grams
+    G = green coffee caffeine % (default: 1.2%)
+    R = roast adjustment factor = 1.15
+    B = brew method factor (varies from 0.7-1.0)
+    
+    Brew method factors based on coffee type:
+    - Cold Brew: 1.0 (highest extraction)
+    - Filter/V60: 0.9
+    - Espresso-based (Mocha, Cappuccino, Latte): 0.8
+    - Default: 0.85
+    """
+    G = 0.012  # 1.2% green coffee caffeine
+    R = 1.15   # Roast adjustment factor
+    
+    # Determine brew method factor based on coffee type
+    coffee_type_lower = coffee_type.lower() if coffee_type else ""
+    if 'cold brew' in coffee_type_lower:
+        B = 1.0
+    elif 'filter' in coffee_type_lower or 'v60' in coffee_type_lower or 'pour over' in coffee_type_lower:
+        B = 0.9
+    elif any(x in coffee_type_lower for x in ['espresso', 'mocha', 'cappuccino', 'latte', 'americano', 'macchiato']):
+        B = 0.8
+    else:
+        B = 0.85  # Default
+    
+    caffeine_mg = 1000 * grams * G * R * B
+    return round(caffeine_mg, 1)
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def add_consumed_coffee(request, coffee_id):
@@ -943,6 +1074,84 @@ def add_consumed_coffee(request, coffee_id):
     consumed_coffee = ConsumedCoffee.objects.create(user=request.user, coffee=coffee)
     serializer = ConsumedCoffeeSerializer(consumed_coffee, context={'request': request})
     return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def add_custom_consumed_coffee(request):
+    """
+    Add a custom coffee recipe to consumed list with custom caffeine content.
+    
+    Accepts:
+    - name: Coffee name (required)
+    - origin: Origin name (required)
+    - description: Description (optional)
+    - caffeine_mg: Direct caffeine in mg (optional, if provided, grams are ignored)
+    - grams: Grams of coffee beans (optional, used to calculate caffeine if caffeine_mg not provided)
+    - coffee_type: Type of coffee to determine brew method factor (required if grams provided)
+    """
+    name = request.data.get('name')
+    origin_name = request.data.get('origin')
+    description = request.data.get('description', '')
+    caffeine_mg = request.data.get('caffeine_mg')
+    grams = request.data.get('grams')
+    coffee_type = request.data.get('coffee_type', name)  # Use name as fallback for coffee type
+    
+    if not name or not origin_name:
+        return Response(
+            {'error': 'Name and origin are required'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    # Calculate or use provided caffeine
+    if caffeine_mg is not None:
+        try:
+            caffeine_mg = float(caffeine_mg)
+        except (ValueError, TypeError):
+            return Response(
+                {'error': 'Invalid caffeine_mg value'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+    elif grams is not None:
+        try:
+            grams = float(grams)
+            if grams <= 0:
+                return Response(
+                    {'error': 'Grams must be greater than 0'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            caffeine_mg = calculate_caffeine_from_grams(grams, coffee_type)
+        except (ValueError, TypeError):
+            return Response(
+                {'error': 'Invalid grams value'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+    else:
+        return Response(
+            {'error': 'Either caffeine_mg or grams must be provided'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    # Get or create origin
+    origin, _ = Origin.objects.get_or_create(name=origin_name)
+    
+    # Create coffee with custom caffeine
+    coffee = Coffee.objects.create(
+        name=name,
+        origin=origin,
+        description=description,
+        user=request.user,
+        caffeine_mg=caffeine_mg
+    )
+    
+    # Add to consumed list
+    consumed_coffee = ConsumedCoffee.objects.create(user=request.user, coffee=coffee)
+    serializer = ConsumedCoffeeSerializer(consumed_coffee, context={'request': request})
+    
+    return Response({
+        'consumed_coffee': serializer.data,
+        'calculated_caffeine_mg': caffeine_mg if grams else None
+    }, status=status.HTTP_201_CREATED)
 
 
 @api_view(['DELETE'])

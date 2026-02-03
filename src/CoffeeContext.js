@@ -472,9 +472,16 @@ export const CoffeeProvider = ({ children }) => {
                 const json = await resp.json();
                 console.log("Fetched coffees count:", Array.isArray(json) ? json.length : (Array.isArray(json.results) ? json.results.length : 0));
                 const list = Array.isArray(json) ? json : Array.isArray(json.results) ? json.results : [];
-                console.log("Setting coffees, count:", list.length);
-                setCoffees(list);
-                OfflineService.saveLocalCoffees(list);
+                
+                // Filter out ALL private recipes from main list (they should only appear in "My Recipes")
+                const filteredList = list.filter(c => {
+                    const isPrivate = c.is_private === true || c.is_private === 1;
+                    return !isPrivate; // Always exclude private recipes from main list
+                });
+                
+                console.log("Setting coffees, count:", filteredList.length, "(filtered from", list.length, "private recipes excluded)");
+                setCoffees(filteredList);
+                OfflineService.saveLocalCoffees(filteredList);
             } else {
                 console.error("Fetch failed with status:", resp.status, await resp.text());
             }
@@ -515,10 +522,12 @@ export const CoffeeProvider = ({ children }) => {
 
             if (resp.ok) {
                 const created = await resp.json();
-                const updatedCoffees = [created, ...coffees];
-                setCoffees(updatedCoffees);
-                OfflineService.saveLocalCoffees(updatedCoffees);
+                // Refresh the full list to ensure consistency
+                await fetchData();
                 return created;
+            } else {
+                const errorData = await resp.json().catch(() => ({ detail: 'Failed to create coffee' }));
+                throw new Error(errorData.detail || 'Failed to create coffee');
             }
         } catch (error) {
             console.error('Error adding coffee:', error);
@@ -552,10 +561,12 @@ export const CoffeeProvider = ({ children }) => {
 
             if (resp.ok) {
                 const saved = await resp.json();
-                const updatedCoffees = coffees.map(x => x.id === id ? saved : x);
-                setCoffees(updatedCoffees);
-                OfflineService.saveLocalCoffees(updatedCoffees);
+                // Refresh the full list to ensure consistency
+                await fetchData();
                 return saved;
+            } else {
+                const errorData = await resp.json().catch(() => ({ detail: 'Failed to update coffee' }));
+                throw new Error(errorData.detail || 'Failed to update coffee');
             }
         } catch (error) {
             console.error('Error updating coffee:', error);
@@ -583,9 +594,11 @@ export const CoffeeProvider = ({ children }) => {
             });
 
             if (resp.status === 204 || resp.ok) {
-                const updatedCoffees = coffees.filter(x => x.id !== id);
-                setCoffees(updatedCoffees);
-                OfflineService.saveLocalCoffees(updatedCoffees);
+                // Refresh the full list to ensure consistency
+                await fetchData();
+            } else {
+                const errorData = await resp.json().catch(() => ({ detail: 'Failed to delete coffee' }));
+                throw new Error(errorData.detail || 'Failed to delete coffee');
             }
         } catch (error) {
             console.error('Error deleting coffee:', error);
@@ -593,35 +606,75 @@ export const CoffeeProvider = ({ children }) => {
         }
     }
 
-    // Load favorites from localStorage on mount
-    useEffect(() => {
-        const storedFavorites = localStorage.getItem(`favorites_${userId}`);
-        if (storedFavorites) {
-            setFavorites(JSON.parse(storedFavorites));
-        }
-    }, [userId]);
-
-    // Save favorites to localStorage whenever favorites change
-    useEffect(() => {
-        if (userId && favorites.length >= 0) {
-            localStorage.setItem(`favorites_${userId}`, JSON.stringify(favorites));
-        }
-    }, [favorites, userId]);
-
-    // Add to favorites
-    const addToFavorites = (coffee) => {
-        const isAlreadyFavorite = favorites.some(fav => fav.id === coffee.id);
-        if (!isAlreadyFavorite) {
-            setFavorites(prev => [...prev, coffee]);
+    // Fetch favorites from database
+    const fetchFavorites = async () => {
+        if (!accessToken || !userId) return;
+        
+        try {
+            const resp = await authenticatedFetch(`${API_ROOT}/favorites/`);
+            
+            if (resp.ok) {
+                const favoritesList = await resp.json();
+                setFavorites(favoritesList);
+            }
+        } catch (error) {
+            console.error('Error fetching favorites:', error);
         }
     };
 
-    // Remove from favorites
-    const removeFromFavorites = (coffeeId) => {
-        setFavorites(prev => prev.filter(fav => fav.id !== coffeeId));
+    // Load favorites from database on mount and when user changes
+    useEffect(() => {
+        if (userId && accessToken) {
+            fetchFavorites();
+        } else {
+            setFavorites([]);
+        }
+    }, [userId, accessToken]);
+
+    // Add to favorites (toggle like)
+    const addToFavorites = async (coffee) => {
+        if (!accessToken) return;
+        
+        try {
+            const resp = await authenticatedFetch(`${API_ROOT}/like/${coffee.id}/`, {
+                method: 'POST'
+            });
+            
+            if (resp.ok) {
+                const data = await resp.json();
+                // Always refresh favorites list to ensure consistency
+                await fetchFavorites();
+                // Also refresh coffees to update is_liked status
+                await fetchData();
+            }
+        } catch (error) {
+            console.error('Error adding to favorites:', error);
+            throw error;
+        }
     };
 
-    // Check if coffee is favorite
+    // Remove from favorites (toggle like)
+    const removeFromFavorites = async (coffeeId) => {
+        if (!accessToken) return;
+        
+        try {
+            const resp = await authenticatedFetch(`${API_ROOT}/like/${coffeeId}/`, {
+                method: 'POST'
+            });
+            
+            if (resp.ok) {
+                // Always refresh favorites list to ensure consistency
+                await fetchFavorites();
+                // Also refresh coffees to update is_liked status
+                await fetchData();
+            }
+        } catch (error) {
+            console.error('Error removing from favorites:', error);
+            throw error;
+        }
+    };
+
+    // Check if coffee is favorite (check in current favorites list)
     const isFavorite = (coffeeId) => {
         return favorites.some(fav => fav.id === coffeeId);
     };

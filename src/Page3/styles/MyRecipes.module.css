@@ -230,6 +230,7 @@
 
 .editButton,
 .deleteButton,
+.privacyButton,
 .favoriteButton {
     padding: 0.5rem 1rem;
     border: none;
@@ -237,6 +238,7 @@
     cursor: pointer;
     font-size: 0.9rem;
     transition: all 0.3s;
+    white-space: nowrap;
 }
 
 .editButton {
@@ -268,6 +270,20 @@
 
 .favoriteActive {
     background-color: #8B4513;
+    color: white;
+}
+
+.privacyButton {
+    background-color: #6c757d;
+    color: white;
+}
+
+.privacyButton:hover {
+    background-color: #5a6268;
+}
+
+.privacyActive {
+    background-color: #495057;
     color: white;
 }
 

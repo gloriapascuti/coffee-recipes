@@ -21,6 +21,13 @@ aws_access_key
 *.key
 *.pem
 
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
 # misc
 .DS_Store
 .env.local

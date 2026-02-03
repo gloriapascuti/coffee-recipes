@@ -70,7 +70,7 @@ const Cards = () => {
                                     <div className={styles.nameParent}>
                                         <div className={styles.name}>{recipe.name}</div>
                                         <div className={styles.description}>
-                                            {recipe.origin?.name || 'Unknown Origin'} • {recipe.likes_count || 0} {recipe.likes_count === 1 ? 'like' : 'likes'}
+                                            {recipe.origin?.name || 'Unknown Origin'}{(recipe.likes_count || 0) > 0 && ` • ${recipe.likes_count} ${recipe.likes_count === 1 ? 'like' : 'likes'}`}
                                         </div>
                                     </div>
                                 </div>

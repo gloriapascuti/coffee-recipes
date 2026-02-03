@@ -25,7 +25,7 @@ class CoffeeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model  = Coffee
-        fields = ['id', 'name', 'origin', 'description', 'user', 'likes_count', 'is_liked', 'is_community_winner', 'caffeine_mg']
+        fields = ['id', 'name', 'origin', 'description', 'user', 'likes_count', 'is_liked', 'is_community_winner', 'is_private', 'caffeine_mg']
 
     def get_caffeine_mg(self, obj):
         """Get caffeine content using the model's method"""
