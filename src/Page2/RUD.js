@@ -64,6 +64,17 @@ export default function RUD() {
         console.log("RUD: coffees count:", coffees.length);
         let list = coffees;
 
+        // Filter out ALL private recipes from main recipe list
+        // Private recipes should only appear in "My Recipes" (Page 3), not in the main list
+        list = list.filter(c => {
+            const isPrivate = c.is_private === true || c.is_private === 1 || c.is_private === 'true';
+            if (isPrivate) {
+                console.log(`Filtering out private recipe from main list: ${c.name}`);
+                return false;
+            }
+            return true; // Only show public recipes
+        });
+
         // only mine?
         if (showMine) {
             list = list.filter(c => c.user === userId);

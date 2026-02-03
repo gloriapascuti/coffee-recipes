@@ -166,7 +166,7 @@ const InfiniteScroll = ({data, loading, getBackgroundColor, loadMoreData}) => {
                                             onClick={(e) => handleLikeClick(coffee, e)}
                                             title={coffee.is_liked ? "Unlike this recipe" : "Like this recipe (Active Challenge)"}
                                         >
-                                            {coffee.is_liked ? '❤️' : '🤍'} {coffee.likes_count || 0}
+                                            {coffee.is_liked ? '❤️' : '🤍'}{(coffee.likes_count || 0) > 0 && ` ${coffee.likes_count}`}
                                         </button>
                                     );
                                 }

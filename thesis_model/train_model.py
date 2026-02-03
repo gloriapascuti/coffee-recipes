@@ -62,12 +62,43 @@ def load_and_preprocess_data(dataset_path):
         'bmi': np.clip(np.random.normal(26.5, 5.5, n_samples), 18, 45),  # Realistic BMI range
     }
     
-    # Caffeine intake - more realistic distribution (most people consume 0-300mg)
-    # Use exponential distribution for caffeine (most people have low intake)
-    caffeine_base = np.random.exponential(100, n_samples)  # Mean ~100mg
-    caffeine_base = np.clip(caffeine_base, 0, 800)  # Cap at 800mg
-    data['avg_daily_caffeine_mg'] = caffeine_base
-    data['total_caffeine_week_mg'] = caffeine_base * 7
+    # Caffeine intake - based on actual coffee type consumption patterns
+    # Real-world caffeine content per serving:
+    # Cold brew (24hr): 280mg, Cold brew (no ice): 247mg, Cold brew (8hr): 238mg
+    # French press: 223mg, Aeropress: 204mg, Pour over: 185mg, Cold brew (with ice): 182mg
+    # Chemex: 172mg, Drip maker: 170mg, American press: 146mg, Drip: 116mg
+    # Espresso: 68mg, Ristretto: 63mg, Stove-top: 49mg
+    # Most people drink 1-3 coffees per day, with common types being:
+    # - Espresso-based drinks (68-136mg): 40% of people
+    # - Drip/Pour over (116-185mg): 35% of people
+    # - Cold brew/French press (182-280mg): 15% of people
+    # - Specialty methods (49-204mg): 10% of people
+    
+    # Simulate daily caffeine based on coffee type preferences
+    coffee_types = np.random.choice(
+        ['espresso', 'drip', 'cold_brew', 'specialty'],
+        n_samples,
+        p=[0.40, 0.35, 0.15, 0.10]
+    )
+    
+    # Base caffeine per coffee type (single serving)
+    base_caffeine = np.zeros(n_samples)
+    base_caffeine[coffee_types == 'espresso'] = np.random.choice([68, 136], np.sum(coffee_types == 'espresso'), p=[0.7, 0.3])  # Single or double
+    base_caffeine[coffee_types == 'drip'] = np.random.choice([116, 170, 185], np.sum(coffee_types == 'drip'), p=[0.4, 0.4, 0.2])
+    base_caffeine[coffee_types == 'cold_brew'] = np.random.choice([182, 238, 247, 280], np.sum(coffee_types == 'cold_brew'), p=[0.3, 0.3, 0.2, 0.2])
+    base_caffeine[coffee_types == 'specialty'] = np.random.choice([49, 63, 146, 172, 204, 223], np.sum(coffee_types == 'specialty'), p=[0.1, 0.1, 0.2, 0.2, 0.2, 0.2])
+    
+    # Number of coffees per day (1-4, weighted towards 1-2)
+    num_coffees = np.random.choice([1, 2, 3, 4], n_samples, p=[0.5, 0.3, 0.15, 0.05])
+    
+    # Calculate daily caffeine with some variation
+    daily_caffeine = base_caffeine * num_coffees
+    # Add ±10% variation to account for serving size differences
+    daily_caffeine = daily_caffeine * np.random.uniform(0.9, 1.1, n_samples)
+    daily_caffeine = np.clip(daily_caffeine, 0, 800)  # Cap at 800mg
+    
+    data['avg_daily_caffeine_mg'] = daily_caffeine
+    data['total_caffeine_week_mg'] = daily_caffeine * 7
     
     # Blood pressure - correlated with age and health conditions
     # Normal BP: ~120/80, but varies with age

@@ -11,6 +11,9 @@ from .views import (
     log_operation,
     generate_ai_recipe,
     toggle_like,
+    get_favorites,
+    get_my_recipes,
+    toggle_privacy,
     most_popular_recipes,
     challenge_list,
     respond_to_challenge,
@@ -20,6 +23,7 @@ from .views import (
     mark_notification_read,
     available_users,
     add_consumed_coffee,
+    add_custom_consumed_coffee,
     remove_consumed_coffee,
     get_consumed_coffees,
     health_profile,
@@ -62,8 +66,13 @@ urlpatterns = [
     # AI recipe generation
     path('generate-ai-recipe/', generate_ai_recipe, name='generate-ai-recipe'),
     
-    # Like system
+    # Like system (favorites)
+    path('favorites/', get_favorites, name='get-favorites'),
     path('like/<int:coffee_id>/', toggle_like, name='toggle-like'),
+    # My Recipes (includes private recipes)
+    path('my-recipes/', get_my_recipes, name='get-my-recipes'),
+    # Privacy
+    path('privacy/<int:coffee_id>/', toggle_privacy, name='toggle-privacy'),
     
     # Most popular recipes
     path('most-popular/', most_popular_recipes, name='most-popular-recipes'),
@@ -79,6 +88,7 @@ urlpatterns = [
     
     # Consumed coffees
     path('consumed/<int:coffee_id>/', add_consumed_coffee, name='add-consumed-coffee'),
+    path('consumed/custom/', add_custom_consumed_coffee, name='add-custom-consumed-coffee'),
     path('consumed/remove/<int:consumed_id>/', remove_consumed_coffee, name='remove-consumed-coffee'),
     path('consumed/', get_consumed_coffees, name='get-consumed-coffees'),
     

@@ -26,7 +26,8 @@ export default function MyRecipes() {
         addToFavorites,
         removeFromFavorites,
         isFavorite,
-        fetchData
+        fetchData,
+        authenticatedFetch
     } = useCoffee();
 
     const [myRecipes, setMyRecipes] = useState([]);
@@ -45,16 +46,53 @@ export default function MyRecipes() {
     });
 
     useEffect(() => {
-        // Filter recipes by current user
-        const userRecipes = coffees.filter(c => c.user === userId);
-        setMyRecipes(userRecipes);
+        // Fetch user's own recipes directly from API (including private ones)
+        const fetchMyRecipes = async () => {
+            if (userId && authenticatedFetch) {
+                try {
+                    // Use the dedicated endpoint that includes private recipes
+                    const response = await authenticatedFetch(`${API_URL}/my-recipes/`, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const userRecipes = await response.json();
+                        setMyRecipes(userRecipes);
+                    } else {
+                        console.error('Failed to fetch my recipes:', response.status);
+                        // Fallback to filtering from context coffees (may miss private recipes)
+                        const userRecipes = coffees.filter(c => {
+                            const coffeeUserId = typeof c.user === 'object' ? c.user.id : c.user;
+                            return coffeeUserId === userId;
+                        });
+                        setMyRecipes(userRecipes);
+                    }
+                } catch (error) {
+                    console.error('Error fetching my recipes:', error);
+                    // Fallback to filtering from context coffees (may miss private recipes)
+                    const userRecipes = coffees.filter(c => {
+                        const coffeeUserId = typeof c.user === 'object' ? c.user.id : c.user;
+                        return coffeeUserId === userId;
+                    });
+                    setMyRecipes(userRecipes);
+                }
+            } else {
+                // No user ID, use empty array
+                setMyRecipes([]);
+            }
+        };
+        
+        fetchMyRecipes();
         
         // Get favorites list
         setFavoritesList(favorites);
         
         // Fetch origins
         fetchOrigins();
-    }, [coffees, userId, favorites]);
+    }, [coffees, userId, favorites, authenticatedFetch]);
 
     const fetchOrigins = async () => {
         try {
@@ -193,6 +231,42 @@ export default function MyRecipes() {
         }
     };
 
+    const handleTogglePrivacy = async (coffee) => {
+        try {
+            const response = await authenticatedFetch(`${API_URL}/privacy/${coffee.id}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ detail: 'Failed to toggle privacy' }));
+                const errorMessage = errorData.detail || errorData.error || 'Failed to toggle privacy';
+                console.error('Privacy toggle error:', errorMessage, errorData);
+                throw new Error(errorMessage);
+            }
+
+            const data = await response.json();
+            
+            // Refresh data to get updated privacy status
+            if (fetchData) {
+                await fetchData();
+            }
+            
+            setMessage({ 
+                type: 'success', 
+                text: data.message || (data.is_private ? 'Recipe is now private' : 'Recipe is now public')
+            });
+        } catch (err) {
+            console.error('Error toggling privacy:', err);
+            setMessage({ 
+                type: 'error', 
+                text: err.message || 'Failed to update privacy. Please try again.' 
+            });
+        }
+    };
+
     useEffect(() => {
         if (message) {
             const timer = setTimeout(() => setMessage(null), 5000);
@@ -319,13 +393,20 @@ export default function MyRecipes() {
                                                 className={styles.editButton}
                                                 onClick={() => handleStartEdit(coffee)}
                                             >
-                                                ✏️ Edit
+                                                Edit
                                             </button>
                                             <button
                                                 className={styles.deleteButton}
                                                 onClick={() => handleDeleteRecipe(coffee.id)}
                                             >
-                                                🗑️ Delete
+                                                Delete
+                                            </button>
+                                            <button
+                                                className={`${styles.privacyButton} ${coffee.is_private ? styles.privacyActive : ''}`}
+                                                onClick={() => handleTogglePrivacy(coffee)}
+                                                title={coffee.is_private ? "Make public (show in main recipe list)" : "Keep private (hide from main recipe list)"}
+                                            >
+                                                {coffee.is_private ? 'Private' : 'Public'}
                                             </button>
                                             <button
                                                 className={`${styles.favoriteButton} ${isFavorite(coffee.id) ? styles.favoriteActive : ''}`}
@@ -340,7 +421,7 @@ export default function MyRecipes() {
                                         <div className={styles.origin}>Origin: {coffee.origin.name}</div>
                                         <div className={styles.description}>{coffee.description}</div>
                                         <div className={styles.meta}>
-                                            <span>Likes: {coffee.likes_count || 0}</span>
+                                            {(coffee.likes_count || 0) > 0 && <span>Likes: {coffee.likes_count}</span>}
                                             <span>Caffeine: ~{coffee.caffeine_mg || 95}mg</span>
                                         </div>
                                     </div>
@@ -383,7 +464,7 @@ export default function MyRecipes() {
                                         <div className={styles.origin}>Origin: {coffee.origin?.name || 'Unknown'}</div>
                                         <div className={styles.description}>{coffee.description}</div>
                                         <div className={styles.meta}>
-                                            <span>Likes: {coffee.likes_count || 0}</span>
+                                            {(coffee.likes_count || 0) > 0 && <span>Likes: {coffee.likes_count}</span>}
                                             <span>Caffeine: ~{coffee.caffeine_mg || 95}mg</span>
                                         </div>
                                     </div>
