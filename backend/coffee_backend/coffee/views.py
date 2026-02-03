@@ -182,7 +182,8 @@ from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models.coffee import Coffee, Origin, Like
+from .models.coffee import Coffee, Origin, Like, ConsumedCoffee
+from .models.health import UserHealthProfile, BloodPressureEntry
 from .models.uploads import UploadedFile
 from .models.coffee_operations import CoffeeOperation
 from .models.challenges import Challenge, ChallengeRecipe, Vote, Notification
@@ -199,6 +200,9 @@ from .serializers import (
     ChallengeRecipeSerializer,
     VoteSerializer,
     NotificationSerializer,
+    ConsumedCoffeeSerializer,
+    UserHealthProfileSerializer,
+    BloodPressureEntrySerializer,
 )
 from .models.operations import Operation
 from .models.user import User
@@ -923,3 +927,225 @@ def available_users(request):
     
     serializer = UserSerializer(available_users, many=True)
     return Response(serializer.data)
+
+
+# Consumed Coffee Endpoints
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def add_consumed_coffee(request, coffee_id):
+    """Add a coffee to user's consumed list"""
+    try:
+        coffee = Coffee.objects.get(id=coffee_id)
+    except Coffee.DoesNotExist:
+        return Response({'error': 'Coffee not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    consumed_coffee = ConsumedCoffee.objects.create(user=request.user, coffee=coffee)
+    serializer = ConsumedCoffeeSerializer(consumed_coffee, context={'request': request})
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def remove_consumed_coffee(request, consumed_id):
+    """Remove a consumed coffee entry"""
+    try:
+        consumed_coffee = ConsumedCoffee.objects.get(id=consumed_id, user=request.user)
+        consumed_coffee.delete()
+        return Response({'message': 'Consumed coffee removed'}, status=status.HTTP_200_OK)
+    except ConsumedCoffee.DoesNotExist:
+        return Response({'error': 'Consumed coffee not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_consumed_coffees(request):
+    """Get consumed coffees organized by time periods"""
+    from datetime import datetime, timedelta
+    
+    now = timezone.now()
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    yesterday_start = today_start - timedelta(days=1)
+    week_ago = today_start - timedelta(days=7)
+    month_ago = today_start - timedelta(days=30)
+    
+    # Get all consumed coffees for user
+    all_consumed = ConsumedCoffee.objects.filter(user=request.user).select_related('coffee').order_by('-consumed_at')
+    
+    # Organize by periods
+    today = [ConsumedCoffeeSerializer(cc, context={'request': request}).data 
+             for cc in all_consumed if cc.consumed_at >= today_start]
+    yesterday = [ConsumedCoffeeSerializer(cc, context={'request': request}).data 
+                 for cc in all_consumed if yesterday_start <= cc.consumed_at < today_start]
+    last_7_days = [ConsumedCoffeeSerializer(cc, context={'request': request}).data 
+                   for cc in all_consumed if cc.consumed_at >= week_ago and cc.consumed_at < today_start]
+    last_month = [ConsumedCoffeeSerializer(cc, context={'request': request}).data 
+                  for cc in all_consumed if cc.consumed_at >= month_ago and cc.consumed_at < today_start]
+    
+    return Response({
+        'today': today,
+        'yesterday': yesterday,
+        'last_7_days': last_7_days,
+        'last_month': last_month,
+        'all': ConsumedCoffeeSerializer(all_consumed, many=True, context={'request': request}).data
+    })
+
+
+# Health Profile Endpoints
+
+@api_view(['GET', 'PUT'])
+@permission_classes([IsAuthenticated])
+def health_profile(request):
+    """Get or update user health profile"""
+    profile, created = UserHealthProfile.objects.get_or_create(user=request.user)
+    
+    if request.method == 'GET':
+        serializer = UserHealthProfileSerializer(profile)
+        return Response(serializer.data)
+    
+    elif request.method == 'PUT':
+        serializer = UserHealthProfileSerializer(profile, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def add_blood_pressure(request):
+    """Add a blood pressure reading"""
+    serializer = BloodPressureEntrySerializer(data=request.data)
+    if serializer.is_valid():
+        bp_entry = serializer.save(user=request.user)
+        return Response(BloodPressureEntrySerializer(bp_entry).data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_blood_pressure_entries(request):
+    """Get user's blood pressure entries"""
+    entries = BloodPressureEntry.objects.filter(user=request.user).order_by('-measured_at')
+    serializer = BloodPressureEntrySerializer(entries, many=True)
+    return Response(serializer.data)
+
+
+# Prediction Endpoint
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def generate_prediction(request):
+    """Generate heart disease risk prediction based on consumed coffees and health profile"""
+    from datetime import datetime, timedelta
+    
+    period = request.data.get('period', 'week')  # week, month, year
+    # Optional BP override for this prediction
+    systolic = request.data.get('systolic')
+    diastolic = request.data.get('diastolic')
+    pulse = request.data.get('pulse')
+    
+    # Calculate time range
+    now = timezone.now()
+    if period == 'week':
+        start_date = now - timedelta(days=7)
+    elif period == 'month':
+        start_date = now - timedelta(days=30)
+    elif period == 'year':
+        start_date = now - timedelta(days=365)
+    else:
+        return Response({'error': 'Invalid period. Use: week, month, or year'}, 
+                       status=status.HTTP_400_BAD_REQUEST)
+    
+    # Get consumed coffees in period
+    consumed_coffees = ConsumedCoffee.objects.filter(
+        user=request.user,
+        consumed_at__gte=start_date
+    ).select_related('coffee')
+    
+    # Calculate caffeine features
+    total_caffeine = sum(cc.coffee.get_caffeine_mg() for cc in consumed_coffees)
+    avg_daily_caffeine = total_caffeine / max((now - start_date).days, 1)
+    num_coffees = consumed_coffees.count()
+    
+    # Get health profile
+    try:
+        health_profile = request.user.health_profile
+    except UserHealthProfile.DoesNotExist:
+        health_profile = None
+    
+    # Get latest BP (use override if provided, otherwise latest entry)
+    bp_entry = None
+    if systolic and diastolic:
+        # Use provided BP
+        bp_entry = {
+            'systolic': systolic,
+            'diastolic': diastolic,
+            'pulse': pulse
+        }
+    else:
+        # Get latest BP entry
+        latest_bp = BloodPressureEntry.objects.filter(user=request.user).order_by('-measured_at').first()
+        if latest_bp:
+            bp_entry = {
+                'systolic': latest_bp.systolic,
+                'diastolic': latest_bp.diastolic,
+                'pulse': latest_bp.pulse,
+                'measured_at': latest_bp.measured_at
+            }
+    
+    # For now, return a mock prediction
+    # TODO: Integrate actual ML model
+    risk_probability = 0.15  # Placeholder
+    if health_profile:
+        # Simple heuristic based on health factors
+        if health_profile.has_hypertension:
+            risk_probability += 0.1
+        if health_profile.has_diabetes:
+            risk_probability += 0.1
+        if health_profile.has_family_history_chd:
+            risk_probability += 0.05
+        if health_profile.is_smoker:
+            risk_probability += 0.1
+        if avg_daily_caffeine > 400:  # High caffeine
+            risk_probability += 0.05
+    
+    # Clamp between 0 and 1
+    risk_probability = min(max(risk_probability, 0.0), 1.0)
+    
+    # Determine risk category
+    if risk_probability < 0.2:
+        risk_category = 'low'
+    elif risk_probability < 0.5:
+        risk_category = 'moderate'
+    else:
+        risk_category = 'high'
+    
+    # Check missing fields
+    missing_fields = []
+    if not health_profile:
+        missing_fields = ['health_profile']
+    else:
+        if not health_profile.sex:
+            missing_fields.append('sex')
+        if not health_profile.date_of_birth:
+            missing_fields.append('date_of_birth')
+        if not health_profile.height_cm:
+            missing_fields.append('height_cm')
+        if not health_profile.weight_kg:
+            missing_fields.append('weight_kg')
+    
+    return Response({
+        'period': period,
+        'risk_probability': round(risk_probability, 3),
+        'risk_percentage': round(risk_probability * 100, 1),
+        'risk_category': risk_category,
+        'caffeine_stats': {
+            'total_mg': round(total_caffeine, 2),
+            'avg_daily_mg': round(avg_daily_caffeine, 2),
+            'num_coffees': num_coffees
+        },
+        'used_bp': bp_entry,
+        'missing_fields': missing_fields,
+        'note': 'This is a preliminary prediction. A trained ML model will be integrated for accurate risk assessment.'
+    })

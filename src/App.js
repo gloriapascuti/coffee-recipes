@@ -13,6 +13,7 @@ import BrewingAndSyrups from './Page1/BrewingAndSyrups';
 
 import RUD from './Page2/RUD';
 import FileUploader from './Page2/FileUploader';
+import ConsumedCoffees from './Page3/ConsumedCoffees';
 
 import NavigationFooter from './Page1/NavigationFooter';
 import EntryPage from './authentication/EntryPage';
@@ -61,6 +62,18 @@ function App() {
                                 <Header/>
                                 <RUD/>
                                 <FileUploader/>
+                                <NavigationFooter/>
+                            </>
+                        )}
+                    />
+                    
+                    {/* Page 3 Route */}
+                    <PrivateRoute
+                        path="/page3"
+                        component={() => (
+                            <>
+                                <Header/>
+                                <ConsumedCoffees/>
                                 <NavigationFooter/>
                             </>
                         )}

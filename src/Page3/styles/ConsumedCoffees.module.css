@@ -1,0 +1,183 @@
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.section {
+    margin-bottom: 3rem;
+}
+
+.sectionTitle {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    color: #333;
+    border-bottom: 2px solid #8B4513;
+    padding-bottom: 0.5rem;
+}
+
+.tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.tab {
+    padding: 0.75rem 1.5rem;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    font-size: 1rem;
+    color: #666;
+    transition: all 0.3s;
+}
+
+.tab:hover {
+    color: #8B4513;
+    background-color: #f5f5f5;
+}
+
+.activeTab {
+    color: #8B4513;
+    border-bottom-color: #8B4513;
+    font-weight: bold;
+}
+
+.loading,
+.emptyMessage {
+    text-align: center;
+    padding: 2rem;
+    color: #666;
+    font-size: 1.1rem;
+}
+
+.error {
+    background-color: #ffebee;
+    color: #c62828;
+    padding: 1rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+}
+
+.coffeeList {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.coffeeCard {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s;
+}
+
+.coffeeCard:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.coffeeInfo {
+    flex: 1;
+}
+
+.coffeeInfo h3 {
+    margin: 0 0 0.5rem 0;
+    color: #333;
+    font-size: 1.3rem;
+}
+
+.coffeeOrigin {
+    color: #8B4513;
+    font-weight: 500;
+    margin: 0.25rem 0;
+}
+
+.coffeeDescription {
+    color: #666;
+    margin: 0.5rem 0;
+    line-height: 1.5;
+}
+
+.caffeineInfo {
+    color: #666;
+    font-size: 0.9rem;
+    margin: 0.5rem 0;
+}
+
+.consumedTime {
+    color: #999;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+}
+
+.removeButton {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.3s;
+}
+
+.removeButton:hover {
+    background-color: #d32f2f;
+}
+
+.addCoffeeSection {
+    margin-top: 1.5rem;
+}
+
+.helpText {
+    color: #666;
+    margin-bottom: 1.5rem;
+}
+
+.recipeGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.recipeCard {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.recipeCard h4 {
+    margin: 0 0 0.5rem 0;
+    color: #333;
+}
+
+.recipeOrigin {
+    color: #8B4513;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.addButton {
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    width: 100%;
+    transition: background-color 0.3s;
+}
+
+.addButton:hover {
+    background-color: #45a049;
+}

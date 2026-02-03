@@ -1,0 +1,72 @@
+DATASET SUMMARY FOR PROFESSOR
+Student: Gloriasa
+Topic: Heart Disease Prediction based on Caffeine Intake
+Date: December 2, 2025
+
+---
+
+1. DATASET SIZE:
+   - Total usable sample: 6,063 patients
+   - All patients have complete data for: caffeine intake, blood pressure status, demographics, and comorbidities
+   - Outcome distribution: 2,090 hypertension cases (33%) vs 4,231 without hypertension (67%)
+   - This provides excellent statistical power for the analysis
+
+2. BLOOD PRESSURE FORMAT:
+   - Blood pressure is recorded as DISCRETE CATEGORIES (not continuous values)
+   - Primary variable: BPQ020 - "Ever told you had high blood pressure" (Yes/No)
+   - Additional categorical variables available:
+     * Taking blood pressure medication (Yes/No)
+     * Doctor recommended weight control due to BP (Yes/No)
+     * Family history of hypertension (Yes/No)
+   - Age at first hypertension diagnosis is also available (continuous)
+   
+   Note: Actual BP measurements (e.g., 120/80 mmHg) are NOT in this dataset. 
+   We will predict hypertension STATUS (binary classification: Yes/No).
+
+3. OTHER DIETARY/HEALTH FIELDS AVAILABLE:
+
+   A) Macronutrients & Energy:
+      - Total calories (kcal)
+      - Protein (g)
+      - Carbohydrates (g)
+      - Sugars (g)
+      - Dietary fiber (g)
+      - Total fat, saturated fat, monounsaturated fat, polyunsaturated fat (g)
+      - Cholesterol (mg) 
+   
+   B) Micronutrients:
+      - Vitamins: A, B1, B2, B6, B12, C, D, E, K, Niacin, Folate
+      - Minerals: Calcium, Phosphorus, Magnesium, Iron, Zinc, Copper, Sodium, Potassium, Selenium
+      - Antioxidants: Beta-carotene, Lycopene, Lutein+Zeaxanthin
+   
+   C) Other Dietary Components:
+      - Alcohol (g)
+      - Theobromine (mg) - from chocolate/cocoa
+      - Moisture content
+      - Various fatty acid profiles
+   
+   D) Comorbidities & Risk Factors:
+      - Diabetes status (prediabetic, diabetic, non-diabetic)
+      - Demographics: Age, gender, race/ethnicity, education, income
+      - (75+ total nutritional variables available for controlling confounders)
+
+4. AGE RANGES:
+   - Full dataset range: 0 to 80 years
+   - Average age: 32 years
+   - For cardiovascular analysis, we can filter to adults (18-80 years)
+   - Pre-filtered samples available by age groups:
+     * 18-25 years
+     * 26-35 years
+     * 36-45 years
+     * 46-55 years
+     * 56-65 years
+   - Can stratify analysis by these age groups to examine age-dependent effects
+
+---
+
+RESEARCH APPROACH:
+We will predict hypertension status (categorical outcome) from caffeine intake and control variables using classification models (e.g., logistic regression, random forest). The relationship between hypertension and cardiovascular disease is well-established in literature, allowing us to discuss heart disease risk implications.
+
+DATA SOURCE:
+National Health and Nutrition Examination Survey (NHANES) - nationally representative U.S. sample
+
