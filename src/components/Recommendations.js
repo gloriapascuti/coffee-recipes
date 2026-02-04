@@ -118,12 +118,14 @@ const Recommendations = () => {
                 const data = await response.json();
                 setAiRecipe(data.recipe);
             } else {
-                console.error('Failed to generate AI recipe');
-                setAiRecipe('Failed to generate recipe. Please try again.');
+                const errorData = await response.json().catch(() => ({}));
+                const errorMessage = errorData.error || 'Failed to generate recipe. Please try again.';
+                console.error('Failed to generate AI recipe:', errorMessage);
+                setAiRecipe(`Error: ${errorMessage}`);
             }
         } catch (error) {
             console.error('Error generating AI recipe:', error);
-            setAiRecipe('Error generating recipe. Please try again.');
+            setAiRecipe(`Error generating recipe: ${error.message || 'Please try again.'}`);
         } finally {
             setLoading(false);
         }

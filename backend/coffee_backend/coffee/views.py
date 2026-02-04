@@ -1,170 +1,3 @@
-# import os
-# from django.conf import settings
-# from django.shortcuts import get_object_or_404
-# from django.contrib.auth.models import User
-#
-# from rest_framework import status
-# from rest_framework.views import APIView
-# from rest_framework.parsers import MultiPartParser, FormParser
-# from rest_framework.response import Response
-# from rest_framework.decorators import api_view, permission_classes
-# from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticatedOrReadOnly
-# from rest_framework.authtoken.models import Token
-# from rest_framework.authtoken.views import ObtainAuthToken
-#
-# from .models.coffee import Coffee, Origin
-# from .models.uploads import UploadedFile
-# from .serializers import (
-#     CoffeeSerializer,
-#     OriginSerializer,
-#     UploadedFileSerializer,
-#     RegisterSerializer,
-#     LoginSerializer,
-#     UserSerializer,
-# )
-# from .models import UserProfile
-#
-# @api_view(['GET'])
-# @permission_classes([AllowAny])
-# def healthcheck(request):
-#     return Response({"status": "ok"})
-#
-#
-# class RegisterView(APIView):
-#     permission_classes = [AllowAny]
-#
-#     def post(self, request):
-#         serializer = RegisterSerializer(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-#         user = serializer.save()
-#         token, _ = Token.objects.get_or_create(user=user)
-#         return Response(
-#             {"token": token.key, "user_id": user.id, "username": user.username},
-#             status=status.HTTP_201_CREATED
-#         )
-#
-#
-# class LoginView(ObtainAuthToken):
-#     permission_classes = [AllowAny]
-#
-#     def post(self, request, *args, **kwargs):
-#         serializer = LoginSerializer(data=request.data, context={'request': request})
-#         serializer.is_valid(raise_exception=True)
-#         user = serializer.validated_data['user']
-#         token, _ = Token.objects.get_or_create(user=user)
-#         return Response({
-#             'token': token.key,
-#             'user_id': user.id,
-#             'username': user.username
-#         })
-#
-#
-# def log_user_operation(user, operation):
-#     try:
-#         profile = user.userprofile
-#         if profile.users_operations:
-#             profile.users_operations += f",{operation}"
-#         else:
-#             profile.users_operations = operation
-#         profile.save()
-#     except Exception as e:
-#         print("Failed to log user operation:", e)
-#
-#
-# class CoffeeViewSets(APIView):
-#     """
-#     GET    /api/coffee/         → admin sees all; others only their own
-#     POST   /api/coffee/         → authenticated only
-#     PUT    /api/coffee/<pk>/    → authenticated only
-#     DELETE /api/coffee/<pk>/    → authenticated only
-#     """
-#     permission_classes = [IsAuthenticatedOrReadOnly]
-#
-#     def get(self, request):
-#         qs = Coffee.objects.select_related('origin', 'user')
-#         # Show all coffees to all users
-#         data = CoffeeSerializer(qs, many=True, context={'request': request}).data
-#         return Response(data)
-#
-#     def post(self, request):
-#         if not request.user or not request.user.is_authenticated:
-#             return Response(
-#                 {"detail": "Authentication credentials were not provided."},
-#                 status=status.HTTP_401_UNAUTHORIZED
-#             )
-#         # Defensive: check user exists in DB
-#         try:
-#             user = User.objects.get(pk=request.user.id)
-#         except User.DoesNotExist:
-#             return Response(
-#                 {"detail": "User does not exist."},
-#                 status=status.HTTP_400_BAD_REQUEST
-#             )
-#         data = request.data.copy()
-#         # Do not set 'user' in data, serializer will use request.user
-#         serializer = CoffeeSerializer(data=data, context={'request': request})
-#         serializer.is_valid(raise_exception=True)
-#         coffee = serializer.save()
-#         log_user_operation(request.user, "add")
-#         return Response(
-#             CoffeeSerializer(coffee, context={'request': request}).data,
-#             status=status.HTTP_201_CREATED
-#         )
-#
-#     def put(self, request, pk):
-#         coffee = get_object_or_404(Coffee, pk=pk)
-#         data = request.data.copy()
-#         data['user'] = coffee.user.id
-#         serializer = CoffeeSerializer(coffee, data=data, context={'request': request})
-#         serializer.is_valid(raise_exception=True)
-#         coffee = serializer.save()
-#         log_user_operation(request.user, "edit")
-#         return Response(CoffeeSerializer(coffee, context={'request': request}).data)
-#
-#     def delete(self, request, pk):
-#         coffee = get_object_or_404(Coffee, pk=pk)
-#         coffee.delete()
-#         log_user_operation(request.user, "delete")
-#         return Response(status=status.HTTP_204_NO_CONTENT)
-#
-#
-# class OriginViewSet(APIView):
-#     permission_classes = [AllowAny]
-#
-#     def get(self, request):
-#         origins = Origin.objects.all()
-#         return Response(OriginSerializer(origins, many=True).data)
-#
-#
-# class FileUploadView(APIView):
-#     permission_classes = [AllowAny]
-#     parser_classes = (MultiPartParser, FormParser)
-#
-#     def post(self, request, format=None):
-#         serializer = UploadedFileSerializer(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-#         serializer.save()
-#         return Response(serializer.data, status=status.HTTP_201_CREATED)
-#
-#     def get(self, request):
-#         folder = os.path.join(settings.MEDIA_ROOT, 'uploads')
-#         files = os.listdir(folder)
-#         return Response({"files": files})
-#
-#
-# class UserList(APIView):
-#     """
-#     GET /api/users/ → admin only
-#     """
-#     permission_classes = [IsAdminUser]
-#
-#     def get(self, request):
-#         qs = User.objects.all()
-#         return Response(UserSerializer(qs, many=True).data)
-
-
-# coffee/views.py
-
 import os
 from django.conf import settings
 from django.shortcuts import get_object_or_404
@@ -223,7 +56,6 @@ class RegisterView(APIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         
-        # Generate JWT tokens
         refresh = RefreshToken.for_user(user)
         
         return Response({
@@ -242,11 +74,9 @@ class LoginView(APIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
         
-        # Update last_login
         user.last_login = timezone.now()
         user.save(update_fields=['last_login'])
         
-        # Generate JWT tokens
         refresh = RefreshToken.for_user(user)
         
         return Response({
@@ -270,7 +100,6 @@ def log_user_operation(user, operation):
 
 
 def log_coffee_operation(user, operation_type, coffee_id=None, coffee_name=None):
-    """Log coffee operations to the CoffeeOperation table"""
     try:
         CoffeeOperation.objects.create(
             user=user,
@@ -287,9 +116,7 @@ class CoffeeViewSet(APIView):
 
     def get(self, request, pk=None):
         if pk is not None:
-            # Get single coffee
             coffee = get_object_or_404(Coffee, pk=pk)
-            # Check if private and user doesn't own it
             if coffee.is_private and coffee.user != request.user:
                 return Response(
                     {'error': 'Coffee not found'},
@@ -298,12 +125,7 @@ class CoffeeViewSet(APIView):
             serializer = CoffeeSerializer(coffee, context={'request': request})
             return Response(serializer.data)
         else:
-            # Get all coffees for the main recipe list
-            # IMPORTANT: Private recipes should NEVER appear in the main recipe list,
-            # even for the owner. They only appear in "My Recipes" and favorites.
             qs = Coffee.objects.select_related('origin', 'user').all()
-            
-            # Always filter out private recipes from the main list
             qs = qs.filter(is_private=False)
             
         serializer = CoffeeSerializer(qs, many=True, context={'request': request})
@@ -319,7 +141,6 @@ class CoffeeViewSet(APIView):
         serializer.is_valid(raise_exception=True)
         coffee = serializer.save()
         
-        # Log the operation
         log_coffee_operation(request.user, 'add', coffee.id, coffee.name)
         
         return Response(
@@ -335,7 +156,6 @@ class CoffeeViewSet(APIView):
             )
         coffee = get_object_or_404(Coffee, pk=pk)
         
-        # Check if user owns the coffee or is admin
         if coffee.user != request.user and not request.user.is_staff:
             return Response(
                 {"detail": "You do not have permission to edit this coffee."},
@@ -348,7 +168,6 @@ class CoffeeViewSet(APIView):
         serializer.is_valid(raise_exception=True)
         coffee = serializer.save()
         
-        # Log the operation
         log_coffee_operation(request.user, 'edit', coffee.id, coffee.name)
         
         return Response(CoffeeSerializer(coffee, context={'request': request}).data)
@@ -361,7 +180,6 @@ class CoffeeViewSet(APIView):
             )
         coffee = get_object_or_404(Coffee, pk=pk)
         
-        # Check if user owns the coffee or is admin
         if coffee.user != request.user and not request.user.is_staff:
             return Response(
                 {"detail": "You do not have permission to delete this coffee."},
@@ -371,7 +189,6 @@ class CoffeeViewSet(APIView):
         coffee_name = coffee.name  # Store name before deletion
         coffee_id = coffee.id
         
-        # Log the operation before deletion
         log_coffee_operation(request.user, 'delete', coffee_id, coffee_name)
         
         coffee.delete()
@@ -422,12 +239,11 @@ class FileUploadView(APIView):
         try:
             os.remove(file_path)
             
-            # Also remove from database if it exists
             try:
                 uploaded_file = UploadedFile.objects.get(file__endswith=filename)
                 uploaded_file.delete()
             except UploadedFile.DoesNotExist:
-                pass  # File might not be in database, but that's okay
+                pass 
             
             return Response(
                 {"message": f"File '{filename}' deleted successfully"}, 
@@ -441,9 +257,6 @@ class FileUploadView(APIView):
 
 
 class UserList(APIView):
-    """
-    GET /api/users/ → admin only
-    """
     permission_classes = [IsAdminUser]
 
     def get(self, request):
@@ -505,6 +318,11 @@ def log_operation(request):
 @permission_classes([IsAuthenticated])
 def generate_ai_recipe(request):
     """Generate a coffee recipe using AI based on user attributes"""
+    import traceback
+    import logging
+    
+    logger = logging.getLogger(__name__)
+    
     attributes = request.data.get('attributes', '')
     
     if not attributes:
@@ -513,66 +331,66 @@ def generate_ai_recipe(request):
             status=status.HTTP_400_BAD_REQUEST
         )
     
-    # Create a prompt for the AI
+    # AI prompt
     prompt = f"Give me a coffee recipe with Name, Origin and Description using these attributes: {attributes}"
     
     try:
-        # For now, we'll create a simple mock response
-        # In production, you would integrate with an actual AI service like OpenAI, Claude, or DeepSeek
-        # 
-        # Example integration with OpenAI:
-        # import openai
-        # openai.api_key = "your-api-key"
-        # response = openai.ChatCompletion.create(
-        #     model="gpt-3.5-turbo",
-        #     messages=[{"role": "user", "content": prompt}]
-        # )
-        # ai_generated_recipe = response.choices[0].message.content
-        #
-        # Example integration with DeepSeek:
-        # import requests
-        # headers = {
-        #     'Authorization': f'Bearer {your_deepseek_api_key}',
-        #     'Content-Type': 'application/json'
-        # }
-        # data = {
-        #     'model': 'deepseek-chat',
-        #     'messages': [{'role': 'user', 'content': prompt}]
-        # }
-        # response = requests.post('https://api.deepseek.com/v1/chat/completions', 
-        #                         headers=headers, json=data)
-        # ai_generated_recipe = response.json()['choices'][0]['message']['content']
-        #
-        # Example integration with Claude (Anthropic):
-        # import anthropic
-        # client = anthropic.Anthropic(api_key="your-api-key")
-        # message = client.messages.create(
-        #     model="claude-3-sonnet-20240229",
-        #     max_tokens=1000,
-        #     messages=[{"role": "user", "content": prompt}]
-        # )
-        # ai_generated_recipe = message.content[0].text
+        from groq import Groq
         
-        # Generate a simple response matching the requested format
-        attributes_list = [attr.strip() for attr in attributes.split(',')]
+        # Check if API key is configured
+        api_key = getattr(settings, 'GROQ_API_KEY', None)
+        if not api_key:
+            error_msg = 'Groq API key is not configured. Please set GROQ_API_KEY environment variable. Get a free key at https://console.groq.com/'
+            logger.error(error_msg)
+            return Response(
+                {'error': error_msg}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
         
-        # Create a mock response in the format: Name, Origin, Description
-        mock_recipe = f"""
-**Name:** Custom {', '.join(attributes_list).title()} Blend
-
-**Origin:** Ethiopian Highlands (Yirgacheffe region)
-
-**Description:** A carefully crafted coffee that embodies {attributes} characteristics. This exceptional blend delivers a complex flavor profile featuring {', '.join(attributes_list)} notes, creating a memorable coffee experience. The beans are sourced from high-altitude farms and expertly roasted to highlight the unique {attributes} qualities you requested.
-        """
+        # Initialize Groq client
+        client = Groq(api_key=api_key)
+        
+        # Call Groq API (using Llama 3.1 8B Instant model - free and fast)
+        response = client.chat.completions.create(
+            model="llama-3.1-8b-instant",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a coffee expert. Generate coffee recipes with Name, Origin, and Description in a clear format."
+                },
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+            max_tokens=500,
+            temperature=0.7
+        )
+        
+        # Extract the AI-generated recipe
+        ai_generated_recipe = response.choices[0].message.content
         
         return Response({
-            'recipe': mock_recipe,
+            'recipe': ai_generated_recipe,
             'attributes_used': attributes
         }, status=status.HTTP_200_OK)
         
-    except Exception as e:
+    except ImportError as e:
+        error_msg = f'Groq library is not installed. Please install it with: pip install groq. Error: {str(e)}'
+        logger.error(error_msg)
+        logger.error(traceback.format_exc())
         return Response(
-            {'error': f'Failed to generate recipe: {str(e)}'}, 
+            {'error': error_msg}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+    except Exception as e:
+        error_msg = f'Failed to generate recipe: {str(e)}'
+        logger.error(error_msg)
+        logger.error(traceback.format_exc())
+        print(f"AI Recipe Generation Error: {error_msg}")
+        print(traceback.format_exc())
+        return Response(
+            {'error': error_msg}, 
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 

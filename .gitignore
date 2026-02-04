@@ -20,6 +20,9 @@
 aws_access_key
 *.key
 *.pem
+.env
+.env.local
+run_server.sh
 
 # Python
 __pycache__/

@@ -32,7 +32,7 @@ def load_model_components():
     Load the trained ML model and preprocessing components.
     Uses caching to avoid reloading on every request.
     """
-    # Return cached components if already loaded
+    # Return cached components if already loaded (re-enable caching for performance)
     if _model_cache['model'] is not None:
         return _model_cache
     
@@ -41,19 +41,30 @@ def load_model_components():
     try:
         # Load model
         model_path = os.path.join(model_dir, 'heart_disease_model.pkl')
-        _model_cache['model'] = joblib.load(model_path)
+        model = joblib.load(model_path)
+        _model_cache['model'] = model
         
         # Load scaler
         scaler_path = os.path.join(model_dir, 'scaler.pkl')
-        _model_cache['scaler'] = joblib.load(scaler_path)
+        scaler = joblib.load(scaler_path)
+        _model_cache['scaler'] = scaler
         
         # Load encoders
         encoders_path = os.path.join(model_dir, 'encoders.pkl')
-        _model_cache['encoders'] = joblib.load(encoders_path)
+        encoders = joblib.load(encoders_path)
+        _model_cache['encoders'] = encoders
         
         # Load feature names
         feature_names_path = os.path.join(model_dir, 'feature_names.pkl')
-        _model_cache['feature_names'] = joblib.load(feature_names_path)
+        feature_names = joblib.load(feature_names_path)
+        _model_cache['feature_names'] = feature_names
+        
+        # Verify model type (for debugging)
+        from sklearn.ensemble import VotingClassifier
+        if isinstance(model, VotingClassifier):
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.info(f"Loaded ensemble model (VotingClassifier) with {len(model.estimators_)} estimators")
         
         return _model_cache
     except FileNotFoundError as e:
@@ -361,8 +372,11 @@ def predict_heart_disease_risk(health_profile, bp_entry, avg_daily_caffeine, tot
     except Exception as e:
         # Fallback to heuristic if model fails
         import logging
+        import traceback
         logger = logging.getLogger(__name__)
-        logger.error(f"ML model prediction failed: {str(e)}")
+        error_msg = f"ML model prediction failed: {str(e)}\n{traceback.format_exc()}"
+        logger.error(error_msg)
+        print(f"ERROR in predict_heart_disease_risk: {error_msg}")  # Also print to console for debugging
         
         # Return a default moderate risk
         return {
