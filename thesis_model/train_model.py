@@ -205,12 +205,29 @@ def train_models(X_train, y_train, X_val, y_val):
     """
     print("Training models...")
     
+    # Slightly stronger models so the classifier can learn more nuanced
+    # relationships (especially between caffeine, BP and clinical factors).
     models = {
-        'Logistic Regression': LogisticRegression(max_iter=2000, random_state=42, class_weight='balanced'),
-        'Random Forest': RandomForestClassifier(n_estimators=200, random_state=42, n_jobs=-1, 
-                                                class_weight='balanced', max_depth=10),
-        'Gradient Boosting': GradientBoostingClassifier(n_estimators=200, random_state=42, 
-                                                        learning_rate=0.05, max_depth=5)
+        'Logistic Regression': LogisticRegression(
+            max_iter=3000,
+            random_state=42,
+            class_weight='balanced'
+        ),
+        'Random Forest': RandomForestClassifier(
+            n_estimators=400,
+            random_state=42,
+            n_jobs=-1,
+            class_weight='balanced',
+            max_depth=14,
+            min_samples_split=4,
+            min_samples_leaf=2
+        ),
+        'Gradient Boosting': GradientBoostingClassifier(
+            n_estimators=350,
+            random_state=42,
+            learning_rate=0.03,
+            max_depth=4
+        )
     }
     
     results = {}

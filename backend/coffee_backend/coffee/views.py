@@ -1177,6 +1177,7 @@ def get_consumed_coffees(request):
     yesterday_start = today_start - timedelta(days=1)
     week_ago = today_start - timedelta(days=7)
     month_ago = today_start - timedelta(days=30)
+    year_ago = today_start - timedelta(days=365)
     
     # Get all consumed coffees for user
     all_consumed = ConsumedCoffee.objects.filter(user=request.user).select_related('coffee').order_by('-consumed_at')
@@ -1190,12 +1191,15 @@ def get_consumed_coffees(request):
                    for cc in all_consumed if cc.consumed_at >= week_ago and cc.consumed_at < today_start]
     last_month = [ConsumedCoffeeSerializer(cc, context={'request': request}).data 
                   for cc in all_consumed if cc.consumed_at >= month_ago and cc.consumed_at < today_start]
+    last_year = [ConsumedCoffeeSerializer(cc, context={'request': request}).data
+                 for cc in all_consumed if cc.consumed_at >= year_ago and cc.consumed_at < today_start]
     
     return Response({
         'today': today,
         'yesterday': yesterday,
         'last_7_days': last_7_days,
         'last_month': last_month,
+        'last_year': last_year,
         'all': ConsumedCoffeeSerializer(all_consumed, many=True, context={'request': request}).data
     })
 

@@ -36,6 +36,7 @@ export default function HealthProfile() {
     const [message, setMessage] = useState(null);
     const [bpEntries, setBpEntries] = useState([]);
     const [showBpForm, setShowBpForm] = useState(false);
+    const [showBpHistory, setShowBpHistory] = useState(false);
     const [newBp, setNewBp] = useState({
         systolic: '',
         diastolic: '',
@@ -348,13 +349,23 @@ export default function HealthProfile() {
             </div>
 
             <div className={styles.section}>
-                <h3>Blood Pressure Log</h3>
-                <button
-                    className={styles.addBpButton}
-                    onClick={() => setShowBpForm(!showBpForm)}
-                >
-                    {showBpForm ? 'Cancel' : '+ Add Blood Pressure Reading'}
-                </button>
+                <h3>Blood Pressure</h3>
+                <div className={styles.bpHeaderRow}>
+                    <button
+                        className={styles.addBpButton}
+                        onClick={() => setShowBpForm(!showBpForm)}
+                    >
+                        {showBpForm ? 'Cancel' : '+ Add Blood Pressure Reading'}
+                    </button>
+                    {bpEntries.length > 0 && (
+                        <button
+                            className={styles.historyToggle}
+                            onClick={() => setShowBpHistory(!showBpHistory)}
+                        >
+                            {showBpHistory ? 'Hide History' : `Blood Pressure History (${bpEntries.length})`}
+                        </button>
+                    )}
+                </div>
 
                 {showBpForm && (
                     <div className={styles.bpForm}>
@@ -398,16 +409,33 @@ export default function HealthProfile() {
 
                 {bpEntries.length > 0 && (
                     <div className={styles.bpList}>
-                        <h4>Recent Readings</h4>
-                        {bpEntries.slice(0, 5).map((entry) => (
-                            <div key={entry.id} className={styles.bpEntry}>
-                                <span className={styles.bpValue}>
-                                    {entry.systolic}/{entry.diastolic}
-                                    {entry.pulse && ` (Pulse: ${entry.pulse})`}
-                                </span>
-                                <span className={styles.bpDate}>{formatDate(entry.measured_at)}</span>
-                            </div>
-                        ))}
+                        {showBpHistory ? (
+                            <>
+                                <h4>Blood Pressure History</h4>
+                                {bpEntries.map((entry) => (
+                                    <div key={entry.id} className={styles.bpEntry}>
+                                        <span className={styles.bpValue}>
+                                            {entry.systolic}/{entry.diastolic}
+                                            {entry.pulse && ` (Pulse: ${entry.pulse})`}
+                                        </span>
+                                        <span className={styles.bpDate}>{formatDate(entry.measured_at)}</span>
+                                    </div>
+                                ))}
+                            </>
+                        ) : (
+                            <>
+                                <h4>Recent Readings</h4>
+                                {bpEntries.slice(0, 5).map((entry) => (
+                                    <div key={entry.id} className={styles.bpEntry}>
+                                        <span className={styles.bpValue}>
+                                            {entry.systolic}/{entry.diastolic}
+                                            {entry.pulse && ` (Pulse: ${entry.pulse})`}
+                                        </span>
+                                        <span className={styles.bpDate}>{formatDate(entry.measured_at)}</span>
+                                    </div>
+                                ))}
+                            </>
+                        )}
                     </div>
                 )}
             </div>

@@ -205,6 +205,30 @@
     font-family: Georgia, serif;
 }
 
+.bpHeaderRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.historyToggle {
+    background-color: #f5f5f5;
+    color: #333;
+    border: 1px solid #d0d0d0;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    font-family: Georgia, serif;
+}
+
+.historyToggle:hover {
+    background-color: #e8e8e8;
+}
+
 .bpEntry {
     display: flex;
     justify-content: space-between;

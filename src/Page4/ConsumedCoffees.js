@@ -12,6 +12,7 @@ export default function ConsumedCoffees() {
         yesterday: [],
         last_7_days: [],
         last_month: [],
+        last_year: [],
         all: []
     });
     const [loading, setLoading] = useState(true);
@@ -382,6 +383,8 @@ export default function ConsumedCoffees() {
                 return consumedCoffees.last_7_days;
             case 'last_month':
                 return consumedCoffees.last_month;
+            case 'last_year':
+                return consumedCoffees.last_year;
             default:
                 return [];
         }
@@ -420,6 +423,12 @@ export default function ConsumedCoffees() {
                         onClick={() => setActiveTab('last_month')}
                     >
                         Last Month ({consumedCoffees.last_month.length})
+                    </button>
+                    <button
+                        className={`${styles.tab} ${activeTab === 'last_year' ? styles.activeTab : ''}`}
+                        onClick={() => setActiveTab('last_year')}
+                    >
+                        Last Year ({consumedCoffees.last_year.length})
                     </button>
                 </div>
 

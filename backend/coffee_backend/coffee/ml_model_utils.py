@@ -191,7 +191,7 @@ def predict_heart_disease_risk(health_profile, bp_entry, avg_daily_caffeine, tot
         model = components['model']
         scaler = components['scaler']
         
-        # Prepare features
+        # Prepare features for the ML model
         features = prepare_features(
             health_profile, bp_entry, avg_daily_caffeine, 
             total_caffeine_week, period_days
@@ -200,37 +200,146 @@ def predict_heart_disease_risk(health_profile, bp_entry, avg_daily_caffeine, tot
         # Scale features
         features_scaled = scaler.transform(features)
         
-        # Predict probability
-        raw_probability = model.predict_proba(features_scaled)[0][1]  # Probability of class 1 (high risk)
+        # Base probability from the ML model (0-1)
+        raw_probability = float(model.predict_proba(features_scaled)[0][1])
         
-        # Calibrate the probability to a more realistic risk percentage
-        # The model outputs probability of being in "high risk" class, but we want a continuous risk score
-        # Use a calibration function to map model probability to realistic risk percentage
-        # This produces more detailed, realistic percentages (e.g., 7.3%, 34.7%) instead of rounded values
+        # ------------------------------------------------------------------
+        # Evidence‑informed post‑processing
+        #
+        # Clinical literature and guidelines (Framingham/ASCVD style scores
+        # and large coffee meta‑analyses) agree on two key points:
+        #   1) Major clinical factors (age, hypertension, diabetes, smoking,
+        #      high cholesterol, family history) dominate absolute risk.
+        #   2) Caffeine/coffee has a U‑shaped relationship: moderate
+        #      intake (~1–3 cups/day) is neutral/possibly protective,
+        #      while chronically high intake (>400 mg/day) can increase
+        #      risk, especially with other risk factors.
+        #
+        # To make the model both intuitive and more realistic, we combine
+        # the ML probability with transparent rule‑based adjustments using
+        # the actual profile, blood pressure and caffeine pattern.
+        # ------------------------------------------------------------------
         
-        # Improved calibration: map model probability to realistic risk range (2% to 45%)
-        # This ensures we get varied, detailed percentages
-        if raw_probability < 0.05:
-            # Very low risk - map to 2-5% range
-            risk_probability = 0.02 + (raw_probability / 0.05) * 0.03  # Map 0-0.05 to 0.02-0.05
-        elif raw_probability < 0.15:
-            # Low risk - map to 5-12% range
-            risk_probability = 0.05 + ((raw_probability - 0.05) / 0.10) * 0.07  # Map 0.05-0.15 to 0.05-0.12
-        elif raw_probability < 0.35:
-            # Low-moderate risk - map to 12-22% range
-            risk_probability = 0.12 + ((raw_probability - 0.15) / 0.20) * 0.10  # Map 0.15-0.35 to 0.12-0.22
-        elif raw_probability < 0.60:
-            # Moderate risk - map to 22-32% range
-            risk_probability = 0.22 + ((raw_probability - 0.35) / 0.25) * 0.10  # Map 0.35-0.60 to 0.22-0.32
-        elif raw_probability < 0.85:
-            # Moderate-high risk - map to 32-40% range
-            risk_probability = 0.32 + ((raw_probability - 0.60) / 0.25) * 0.08  # Map 0.60-0.85 to 0.32-0.40
+        # Safeguards
+        avg_daily_caffeine_mg = max(0.0, float(avg_daily_caffeine or 0.0))
+        period_days = max(1, int(period_days or 1))
+        
+        # --- Clinical risk score (conditions, BP, age, BMI, smoking) ---
+        clinical_score = 0
+        
+        if health_profile:
+            age = health_profile.age or 0
+            bmi = health_profile.bmi or 0
+            
+            # Age – strong driver in real scores
+            if age >= 70:
+                clinical_score += 4
+            elif age >= 60:
+                clinical_score += 3
+            elif age >= 50:
+                clinical_score += 2
+            elif age >= 40:
+                clinical_score += 1
+            
+            # Hypertension / diabetes / cholesterol / smoking / family history
+            if getattr(health_profile, 'has_hypertension', False):
+                clinical_score += 3
+            if getattr(health_profile, 'has_diabetes', False):
+                clinical_score += 3
+            if getattr(health_profile, 'has_high_cholesterol', False):
+                clinical_score += 2
+            if getattr(health_profile, 'is_smoker', False):
+                clinical_score += 3
+            if getattr(health_profile, 'has_family_history_chd', False):
+                clinical_score += 2
+            
+            # BMI – obesity adds risk
+            if bmi >= 35:
+                clinical_score += 2
+            elif bmi >= 30:
+                clinical_score += 1
+        
+        # Blood pressure category (most recent reading for this prediction)
+        systolic = None
+        diastolic = None
+        if bp_entry:
+            systolic = bp_entry.get('systolic')
+            diastolic = bp_entry.get('diastolic')
+        elif health_profile and hasattr(health_profile, 'latest_bp'):
+            latest = health_profile.latest_bp
+            systolic = getattr(latest, 'systolic', None)
+            diastolic = getattr(latest, 'diastolic', None)
+        
+        if systolic is not None and diastolic is not None:
+            # Categories roughly aligned with common hypertension guidelines
+            if systolic >= 160 or diastolic >= 100:
+                clinical_score += 4  # stage 2+
+            elif systolic >= 140 or diastolic >= 90:
+                clinical_score += 3  # stage 1
+            elif systolic >= 130 or diastolic >= 85:
+                clinical_score += 1  # high‑normal
+        
+        # --- Caffeine risk score (intake level + duration) ---
+        caffeine_score = 0
+        
+        # Intake bands based on approximate mg/day
+        if avg_daily_caffeine_mg <= 100:
+            # Very light intake – essentially neutral
+            caffeine_score += 0
+        elif avg_daily_caffeine_mg <= 300:
+            # Typical moderate intake – neutral for risk (no penalty)
+            caffeine_score += 0
+        elif avg_daily_caffeine_mg <= 400:
+            # Upper end of moderate – small penalty
+            caffeine_score += 1
+        elif avg_daily_caffeine_mg <= 600:
+            # Above guideline limit – clear penalty
+            caffeine_score += 3
         else:
-            # High risk - map to 40-45% range
-            risk_probability = 0.40 + ((raw_probability - 0.85) / 0.15) * 0.05  # Map 0.85-1.0 to 0.40-0.45
+            # Very high intake – stronger penalty
+            caffeine_score += 4
         
-        # Ensure risk is between 0.02 and 0.45 (2% to 45%)
-        risk_probability = max(0.02, min(0.45, risk_probability))
+        # Chronic exposure: sustained high intake over many months
+        # Use the length of the period as a proxy for how long the pattern
+        # has been present (yearly prediction vs. weekly snapshot).
+        if period_days >= 180 and avg_daily_caffeine_mg > 400:
+            caffeine_score += 1
+        if period_days >= 365 and avg_daily_caffeine_mg > 400:
+            caffeine_score += 1
+        
+        # --- Combine ML probability with rule‑based adjustments ---
+        #
+        # We want:
+        #   - Clinical factors to set a strong baseline.
+        #   - Caffeine + period (week / month / year) to move the value
+        #     up or down in a *visible* way, especially over months/years.
+        #
+        # So we keep the ML probability as the core signal and apply
+        # gentler deltas:
+        clinical_delta = clinical_score * 0.01   # up to ~0.2 if many risks
+        # Make caffeine effect stronger on longer periods
+        period_factor = min(1.0, period_days / 365.0)  # 0..1
+        caffeine_delta = caffeine_score * (0.01 + 0.02 * period_factor)
+        
+        adjusted_probability = raw_probability + clinical_delta + caffeine_delta
+        
+        # Keep within sensible bounds before calibration
+        adjusted_probability = max(0.01, min(0.95, adjusted_probability))
+        
+        # ------------------------------------------------------------------
+        # Calibration: map probability to an interpretable range while
+        # preserving *relative* differences between week/month/year.
+        #
+        # We now use a mostly linear mapping so that small changes in the
+        # adjusted probability show up as different percentages, instead
+        # of flattening everything at the top.
+        # ------------------------------------------------------------------
+        p = adjusted_probability
+        # Map p in [0,1] approximately to [1%, 55%]
+        risk_probability = 0.01 + 0.54 * p
+        
+        # Final clamp to 1–55%
+        risk_probability = max(0.01, min(0.55, risk_probability))
         
         # Convert to percentage with 2 decimal places for more detail
         risk_percentage = risk_probability * 100
@@ -245,7 +354,7 @@ def predict_heart_disease_risk(health_profile, bp_entry, avg_daily_caffeine, tot
         
         return {
             'risk_probability': float(risk_probability),
-            'risk_percentage': round(risk_percentage, 2),  # Show 2 decimal places for more detail
+            'risk_percentage': round(risk_percentage, 2),
             'risk_category': risk_category
         }
         
