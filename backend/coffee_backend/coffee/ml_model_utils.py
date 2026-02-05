@@ -310,7 +310,7 @@ def predict_heart_disease_risk(health_profile, bp_entry, avg_daily_caffeine, tot
         error_msg = f"ML model prediction failed: {str(e)}\n{traceback.format_exc()}"
         logger.error(error_msg)
         print(f"ERROR in predict_heart_disease_risk: {error_msg}")
-        
+
         return {
             'risk_probability': 0.3,
             'risk_percentage': 30.0,

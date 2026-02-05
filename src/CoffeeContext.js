@@ -514,9 +514,8 @@ export const CoffeeProvider = ({ children }) => {
         };
 
         try {
-            const resp = await fetch(COFFEE_URL, {
+            const resp = await authenticatedFetch(COFFEE_URL, {
                 method: "POST",
-                headers: authHeaders(),
                 body: JSON.stringify(payload)
             });
 
@@ -549,9 +548,8 @@ export const CoffeeProvider = ({ children }) => {
         }
 
         try {
-            const resp = await fetch(`${COFFEE_URL}${id}/`, {
+            const resp = await authenticatedFetch(`${COFFEE_URL}${id}/`, {
                 method: "PUT",
-                headers: authHeaders(),
                 body: JSON.stringify({
                     name: upd.name,
                     origin: { name: upd.origin },
@@ -588,9 +586,8 @@ export const CoffeeProvider = ({ children }) => {
         }
 
         try {
-            const resp = await fetch(`${COFFEE_URL}${id}/`, {
+            const resp = await authenticatedFetch(`${COFFEE_URL}${id}/`, {
                 method: "DELETE",
-                headers: authHeaders(),
             });
 
             if (resp.status === 204 || resp.ok) {
