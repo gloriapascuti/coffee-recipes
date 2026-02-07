@@ -205,6 +205,7 @@ def predict_heart_disease_risk(health_profile, bp_entry, avg_daily_caffeine, tot
         if health_profile:
             age = health_profile.age or 0
             bmi = health_profile.bmi or 0
+            num_relatives = getattr(health_profile, "num_relatives_chd", 0) or 0
             
             if age >= 70:
                 clinical_score += 4
@@ -224,7 +225,11 @@ def predict_heart_disease_risk(health_profile, bp_entry, avg_daily_caffeine, tot
             if getattr(health_profile, 'is_smoker', False):
                 clinical_score += 3
             if getattr(health_profile, 'has_family_history_chd', False):
+                # Base family‑history contribution
                 clinical_score += 2
+                # Additional weight for multiple affected relatives
+                if num_relatives >= 2:
+                    clinical_score += 1
             
             if bmi >= 35:
                 clinical_score += 2

@@ -78,6 +78,8 @@ class Command(BaseCommand):
                 "has_family_history_chd",
                 "is_smoker",
                 "activity_level_encoded",
+                # Additional structured family‑history info for future models
+                "num_relatives_chd",
             ]
 
             writer.writerow(header + feature_cols)
@@ -125,6 +127,7 @@ class Command(BaseCommand):
 
                 # features is shape (1, n)
                 feature_row = list(map(float, features[0]))
+                num_relatives = getattr(profile, "num_relatives_chd", 0) or 0
 
                 writer.writerow(
                     [
@@ -135,6 +138,7 @@ class Command(BaseCommand):
                         round(total_caffeine, 2),
                     ]
                     + feature_row
+                    + [num_relatives]
                 )
 
         self.stdout.write(self.style.SUCCESS(f"Exported dataset to {output_path}"))
