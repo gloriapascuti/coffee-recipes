@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.utils import timezone
 
 class Origin(models.Model):
     name = models.CharField(max_length=100)
@@ -144,7 +145,7 @@ class ConsumedCoffee(models.Model):
         on_delete=models.CASCADE,
         related_name="consumed_by"
     )
-    consumed_at = models.DateTimeField(auto_now_add=True)
+    consumed_at = models.DateTimeField(default=timezone.now)
     # Allow multiple consumptions of the same coffee at different times
     # No unique_together constraint
 

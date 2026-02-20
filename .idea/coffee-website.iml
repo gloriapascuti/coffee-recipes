@@ -10,7 +10,7 @@
       <excludeFolder url="file://$MODULE_DIR$/backend/coffee_backend/.idea/dataSources" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
     </content>
-    <orderEntry type="inheritedJdk" />
+    <orderEntry type="jdk" jdkName="analiza_works" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>
