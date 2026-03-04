@@ -18,6 +18,7 @@ import joblib
 import os
 import argparse
 import warnings
+from datetime import datetime
 warnings.filterwarnings('ignore')
 
 
@@ -75,7 +76,6 @@ def load_and_preprocess_data(dataset_path):
 
 def train_models(X_train, y_train, X_val, y_val):
     print("Training models...")
-    y
     class_weights = compute_class_weight('balanced', classes=np.unique(y_train), y=y_train)
     
     rf = RandomForestClassifier(
@@ -328,6 +328,77 @@ def save_model(model, scaler, encoders, feature_names, optimal_threshold, output
     print(f"\nModel artifacts saved to {output_path}")
 
 
+def save_run_metrics(results, best_model_name, threshold_results, optimal_threshold,
+                     output_path, dataset_path, n_samples, n_features, test_size, random_state):
+    """
+    Persist per-model metrics and threshold search results to CSV files.
+    Appends a new block of rows on every run.
+    """
+    os.makedirs(output_path, exist_ok=True)
+    timestamp = datetime.utcnow().isoformat()
+
+    # Per-model metrics
+    model_rows = []
+    for name, metrics in results.items():
+        model_rows.append({
+            'timestamp': timestamp,
+            'dataset_path': dataset_path,
+            'n_samples': n_samples,
+            'n_features': n_features,
+            'test_size': test_size,
+            'random_state': random_state,
+            'model_name': name,
+            'accuracy': metrics['accuracy'],
+            'precision': metrics['precision'],
+            'recall': metrics['recall'],
+            'f1': metrics['f1'],
+            'roc_auc': metrics['roc_auc'],
+            'is_best_model': int(name == best_model_name),
+        })
+
+    model_df = pd.DataFrame(model_rows)
+    model_metrics_path = os.path.join(output_path, 'model_metrics.csv')
+    model_df.to_csv(
+        model_metrics_path,
+        mode='a',
+        header=not os.path.exists(model_metrics_path),
+        index=False,
+    )
+
+    # Threshold search metrics (for the best model)
+    threshold_rows = []
+    for r in threshold_results:
+        threshold_rows.append({
+            'timestamp': timestamp,
+            'dataset_path': dataset_path,
+            'n_samples': n_samples,
+            'n_features': n_features,
+            'test_size': test_size,
+            'random_state': random_state,
+            'best_model_name': best_model_name,
+            'best_threshold': optimal_threshold,
+            'threshold': r['threshold'],
+            'recall': r['recall'],
+            'precision': r['precision'],
+            'f1': r['f1'],
+            'true_positives': r['tp'],
+            'false_positives': r['fp'],
+        })
+
+    thresholds_df = pd.DataFrame(threshold_rows)
+    thresholds_path = os.path.join(output_path, 'threshold_metrics.csv')
+    thresholds_df.to_csv(
+        thresholds_path,
+        mode='a',
+        header=not os.path.exists(thresholds_path),
+        index=False,
+    )
+
+    print(f"\nRun metrics appended to:")
+    print(f"  - {model_metrics_path}")
+    print(f"  - {thresholds_path}")
+
+
 def main():
     parser = argparse.ArgumentParser(description='Train CVD prediction model')
     parser.add_argument('--dataset_path', type=str, 
@@ -365,6 +436,19 @@ def main():
     evaluate_model_detailed(best_model, best_model_name, results, y_test)
     
     optimal_threshold, threshold_results = optimize_threshold(best_model, scaler, X_test_scaled, y_test)
+
+    save_run_metrics(
+        results=results,
+        best_model_name=best_model_name,
+        threshold_results=threshold_results,
+        optimal_threshold=optimal_threshold,
+        output_path=args.output_path,
+        dataset_path=args.dataset_path,
+        n_samples=len(X),
+        n_features=len(feature_names),
+        test_size=args.test_size,
+        random_state=args.random_state,
+    )
     
     print("Saving model...")
     save_model(best_model, scaler, encoders, feature_names, optimal_threshold, args.output_path)
