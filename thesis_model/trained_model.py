@@ -12,7 +12,7 @@ from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, VotingClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (accuracy_score, precision_score, recall_score, f1_score, 
-                            roc_auc_score, classification_report, confusion_matrix)
+                            roc_auc_score, classification_report, confusion_matrix, matthews_corrcoef)
 from sklearn.utils.class_weight import compute_class_weight
 import joblib
 import os
@@ -110,10 +110,11 @@ def train_models(X_train, y_train, X_val, y_val):
         recall = recall_score(y_val, y_pred, zero_division=0) # false negatives
         f1 = f1_score(y_val, y_pred, zero_division=0) # ( 2 x precision x recall ) / ( precision + recall ) -> forces balance between the two
         roc_auc = roc_auc_score(y_val, y_pred_proba) # raw probability -> calculates the area under the ROC curve
-        
+        mcc = matthews_corrcoef(y_val, y_pred)
+
         results[name] = {
             'model': model, 'accuracy': accuracy, 'precision': precision,
-            'recall': recall, 'f1': f1, 'roc_auc': roc_auc,
+            'recall': recall, 'f1': f1, 'roc_auc': roc_auc, 'mcc': mcc,
             'y_pred': y_pred, 'y_pred_proba': y_pred_proba
         }
         
@@ -138,10 +139,11 @@ def train_models(X_train, y_train, X_val, y_val):
     recall_ensemble = recall_score(y_val, y_pred_ensemble, zero_division=0)
     f1_ensemble = f1_score(y_val, y_pred_ensemble, zero_division=0)
     roc_auc_ensemble = roc_auc_score(y_val, y_pred_proba_ensemble)
+    mcc_ensemble = matthews_corrcoef(y_val, y_pred_ensemble)
     
     results['Ensemble (RF + GB)'] = {
         'model': ensemble, 'accuracy': accuracy_ensemble, 'precision': precision_ensemble,
-        'recall': recall_ensemble, 'f1': f1_ensemble, 'roc_auc': roc_auc_ensemble,
+        'recall': recall_ensemble, 'f1': f1_ensemble, 'roc_auc': roc_auc_ensemble, 'mcc': mcc_ensemble,
         'y_pred': y_pred_ensemble, 'y_pred_proba': y_pred_proba_ensemble
     }
     
@@ -299,6 +301,7 @@ def evaluate_model_detailed(best_model, best_model_name, results, y_val):
     print(f"  Recall:    {best_results['recall']:.3f}")
     print(f"  F1-Score:  {best_results['f1']:.3f}")
     print(f"  ROC-AUC:   {best_results['roc_auc']:.3f}")
+    print(f"  MCC:    {best_results['mcc']:.3f}")
     
     cm = confusion_matrix(y_val, best_results['y_pred'])
     print(f"\nConfusion Matrix:")
@@ -353,6 +356,7 @@ def save_run_metrics(results, best_model_name, threshold_results, optimal_thresh
             'recall': metrics['recall'],
             'f1': metrics['f1'],
             'roc_auc': metrics['roc_auc'],
+            'mcc': metrics['mcc'],
             'is_best_model': int(name == best_model_name),
         })
 
@@ -467,6 +471,7 @@ def main():
     print(f"Dataset: {len(X):,} samples, {len(feature_names)} features")
     print(f"Best model: {best_model_name}")
     print(f"ROC-AUC: {results[best_model_name]['roc_auc']:.3f}")
+    print(f"MCC: {results[best_model_name]['mcc']:.3f}")
     print(f"Optimal threshold: {optimal_threshold:.3f}")
     print(f"Recall: {opt_result['recall']:.1%}, Precision: {opt_result['precision']:.1%}")
     print(f"Model saved to: {args.output_path}")
