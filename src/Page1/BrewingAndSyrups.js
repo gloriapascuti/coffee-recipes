@@ -29,7 +29,7 @@ const BrewingAndSyrups = () => {
     ];
 
     return (
-        <div className={styles.container}>
+        <div id="brewing-methods" className={styles.container}>
             <div className={styles.content}>
                 <div className={styles.sectionTitle}>Coffee Equipment & Flavors</div>
                 

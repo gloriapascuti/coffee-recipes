@@ -132,27 +132,62 @@ const Recommendations = () => {
     };
 
     const parseAIRecipe = (recipe) => {
-        // Parse the AI recipe text to extract Name, Origin, and Description
-        const lines = recipe.split('\n').filter(line => line.trim());
-        
+        const lines = recipe.split('\n');
+
         let name = '';
         let origin = '';
         let description = '';
-        
-        for (const line of lines) {
-            if (line.includes('**Name:**')) {
-                name = line.replace('**Name:**', '').trim();
-            } else if (line.includes('**Origin:**')) {
-                origin = line.replace('**Origin:**', '').trim();
-                // Extract just the region name (e.g., "Ethiopian Highlands" from "Ethiopian Highlands (Yirgacheffe region)")
-                if (origin.includes('(')) {
-                    origin = origin.split('(')[0].trim();
+        let capturingDescription = false;
+
+        // Patterns that signal the start of a new field (stop description capture)
+        const fieldPattern = /^\*\*(Name|Origin|Description|Instructions|Tips|Ingredients)[\s:*]/i;
+
+        for (const raw of lines) {
+            const line = raw.trim();
+            if (!line) continue;
+
+            // Name
+            if (/^\*\*Name[:\*]/i.test(line) || /^Name:/i.test(line)) {
+                capturingDescription = false;
+                name = line.replace(/^\*\*Name[\*:]?\s*/i, '').replace(/^Name:\s*/i, '').trim();
+                continue;
+            }
+
+            // Origin
+            if (/^\*\*Origin[:\*]/i.test(line) || /^Origin:/i.test(line)) {
+                capturingDescription = false;
+                origin = line.replace(/^\*\*Origin[\*:]?\s*/i, '').replace(/^Origin:\s*/i, '').trim();
+                // Strip parenthetical extras: "Ethiopian Highlands (Yirgacheffe)" → "Ethiopian Highlands"
+                if (origin.includes('(')) origin = origin.split('(')[0].trim();
+                continue;
+            }
+
+            // Description — may span multiple lines
+            if (/^\*\*Description[:\*]/i.test(line) || /^Description:/i.test(line)) {
+                capturingDescription = true;
+                const inline = line
+                    .replace(/^\*\*Description[\*:]?\s*/i, '')
+                    .replace(/^Description:\s*/i, '')
+                    .trim();
+                if (inline) description = inline;
+                continue;
+            }
+
+            // Stop capturing description when a new bold field starts
+            if (capturingDescription) {
+                if (fieldPattern.test(line)) {
+                    capturingDescription = false;
+                } else {
+                    description += (description ? ' ' : '') + line;
                 }
-            } else if (line.includes('**Description:**')) {
-                description = line.replace('**Description:**', '').trim();
             }
         }
-        
+
+        // Last-resort fallback: use the whole text as description with a generic name/origin
+        if (!name && !origin && !description) {
+            description = recipe.replace(/\*\*/g, '').trim().slice(0, 400);
+        }
+
         return { name, origin, description };
     };
 
@@ -165,8 +200,9 @@ const Recommendations = () => {
         try {
             const parsedRecipe = parseAIRecipe(aiRecipe);
             
-            if (!parsedRecipe.name || !parsedRecipe.origin || !parsedRecipe.description) {
-                throw new Error('Unable to parse recipe. Please check the format.');
+            const missing = ['name', 'origin', 'description'].filter(k => !parsedRecipe[k]);
+            if (missing.length) {
+                throw new Error(`Could not extract ${missing.join(', ')} from the AI response. Try regenerating.`);
             }
             
             await addCoffee(parsedRecipe);

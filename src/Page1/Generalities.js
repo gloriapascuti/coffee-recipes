@@ -2,7 +2,7 @@ import styles from './styles/Generalities.module.css'
 
 const Generalities = () => {
     return (
-        <div className={styles.container}>
+        <div id="generalities" className={styles.container}>
             <div className={styles.content}>
                 <div className={styles.image}></div>
                 <div className={styles.textContent}>

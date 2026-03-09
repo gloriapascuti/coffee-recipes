@@ -331,9 +331,15 @@ def generate_ai_recipe(request):
             status=status.HTTP_400_BAD_REQUEST
         )
     
-    # AI prompt
-    prompt = f"Give me a coffee recipe with Name, Origin and Description using these attributes: {attributes}"
-    
+    # AI prompt — strict format so the frontend parser always succeeds
+    prompt = (
+        f"Create a coffee recipe using these attributes: {attributes}\n\n"
+        "Respond using EXACTLY this structure, with no extra text before or after:\n"
+        "**Name:** [coffee name]\n"
+        "**Origin:** [origin region, plain text only, no parentheses]\n"
+        "**Description:** [2-3 sentences describing the coffee taste, aroma and brewing style]"
+    )
+
     try:
         from groq import Groq
         
@@ -356,14 +362,17 @@ def generate_ai_recipe(request):
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a coffee expert. Generate coffee recipes with Name, Origin, and Description in a clear format."
+                    "content": (
+                        "You are a coffee expert. Always respond using exactly the format "
+                        "the user specifies. Never add extra sections, headers, or commentary."
+                    )
                 },
                 {
                     "role": "user",
                     "content": prompt
                 }
             ],
-            max_tokens=500,
+            max_tokens=300,
             temperature=0.7
         )
         

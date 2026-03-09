@@ -70,8 +70,11 @@
 }
 
 .contentSection {
-    padding: 40px 80px;
-    text-align: left;
+    padding: 60px 80px 50px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .header {
@@ -86,49 +89,6 @@
     font-family: Georgia, serif;
 }
 
-.page {
-    position: relative;
-    line-height: 150%;
-    font-weight: 500;
-    background-color: white;
-    padding: 6px 12px;
-    font-family: Georgia;
-    text-decoration: none;
-    color: black;
-    border-radius: 5px;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    font-size: 14px;
-}
-
-.page:hover {
-    background-color: #f5f5f5;
-    text-decoration: none;
-    color: black;
-}
-
-.activePage {
-    background-color: #8B4513 !important;
-    color: white !important;
-    font-weight: bold;
-}
-
-.activePage:hover {
-    background-color: #A0522D !important;
-    color: white !important;
-}
-
-.items {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-}
 
 .userActions {
     position: absolute;
@@ -167,7 +127,8 @@
     font-weight: 500;
     font-family: Georgia;
     color: #666;
-    max-width: 800px;
+    max-width: 700px;
+    text-align: center;
 }
 
 .logoutButton {
@@ -222,44 +183,4 @@
     background-color: #d0d0d0;
     text-decoration: none;
     color: black;
-}
-
-.recommendationsButton {
-    background: linear-gradient(135deg, #8B4513, #D2691E);
-    color: white;
-    text-decoration: none;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-weight: bold;
-    transition: all 0.3s ease;
-    font-family: Georgia;
-    font-size: 14px;
-}
-
-.recommendationsButton:hover {
-    background: linear-gradient(135deg, #A0522D, #F4A460);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    text-decoration: none;
-    color: white;
-}
-
-.communityButton {
-    background: linear-gradient(135deg, #A0522D, #CD853F);
-    color: white;
-    text-decoration: none;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-weight: bold;
-    transition: all 0.3s ease;
-    font-family: Georgia;
-    font-size: 14px;
-}
-
-.communityButton:hover {
-    background: linear-gradient(135deg, #B8632F, #DEB887);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    text-decoration: none;
-    color: white;
 }

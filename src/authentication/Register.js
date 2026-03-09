@@ -2,9 +2,11 @@
 import styles from './styles/Register.module.css'
 import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
+import { useCoffee } from '../CoffeeContext';
 
 export default function Register() {
     const history = useHistory();
+    const { setAuthenticatedUser } = useCoffee();
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [firstName, setFirstName] = useState('');
@@ -30,7 +32,9 @@ export default function Register() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
                     username, 
-                    email, 
+                    email,
+                    first_name: firstName,
+                    last_name: lastName,
                     password,
                     password2,
                     phone_number: phoneNumber,
@@ -51,9 +55,13 @@ export default function Register() {
             localStorage.setItem('user_id', String(body.user_id));
             localStorage.setItem('username', body.username);
             localStorage.setItem('user_2fa', body.twofa);
+            localStorage.setItem('user_is_special_admin', 'false');
+
+            // Hydrate the React context state so the app recognises the new user immediately
+            setAuthenticatedUser(body);
             
             // Redirect to app since user is now logged in
-            history.push('/app');
+            history.push('/page1');
         } catch (err) {
             setError('Registration failed: ' + err.message);
         }
