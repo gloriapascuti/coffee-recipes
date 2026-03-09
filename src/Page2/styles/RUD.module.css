@@ -294,16 +294,20 @@
 /* Flex container for charts */
 .chartWrapper {
     display: flex;
-    justify-content: space-between; /* Distribute space between charts */
-    gap: 20px; /* Adds space between the charts */
-    flex-wrap: wrap; /* Allow wrapping on small screens */
+    justify-content: center;
+    align-items: flex-start;
+    gap: 30px;
+    flex-wrap: wrap;
+    padding: 20px 40px 10px;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 /* Each chart container */
 .chartContainer {
-    width: 30%; /* Set each chart to take up 30% of the space */
-    min-width: 250px; /* Set a minimum width to avoid shrinking too much */
-    max-width: 400px; /* Set a max width to avoid charts becoming too big */
+    flex: 1;
+    min-width: 250px;
+    max-width: 380px;
     margin-bottom: 20px;
 }
 
