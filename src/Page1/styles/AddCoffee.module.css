@@ -119,7 +119,7 @@ body {
 }
 
 .coffeeImage {
-    width: 520px;
+    width: min(520px, 100%);
     height: 600px;
     background-image: url('/src/images/Coffee Drinks to Start Your Day.jpeg');
     background-size: cover;

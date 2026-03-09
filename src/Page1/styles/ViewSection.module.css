@@ -29,24 +29,27 @@
 .buttons {
     position: absolute;
     top: 80px;
-    right: 79px;
+    right: max(16px, 79px);
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: flex-end;
     gap: 24px;
+    max-width: calc(100% - 32px);
 }
 .viewAllRecipes {
     position: absolute;
     top: 89px;
-    left: calc(50% - 640px);
+    left: 50%;
+    transform: translateX(-50%);
     font-size: 48px;
     letter-spacing: -0.02em;
     font-weight: 600;
     color: #000;
     display: inline-block;
-    width: 625px;
+    width: min(625px, 90vw);
     font-family: Georgia;
+    text-align: center;
 }
 .section {
     width: 100%;

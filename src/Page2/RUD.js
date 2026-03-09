@@ -120,7 +120,7 @@ export default function RUD() {
 
             <AdminUserTable />
 
-            <div>
+            <div id="all-recipes">
                 <div className={styles.sectionTitle}>All recipes</div>
 
                 {/* ↙︎ our new toggle */}

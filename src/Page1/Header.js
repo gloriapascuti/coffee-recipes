@@ -13,15 +13,6 @@ const Header = () => {
         history.push('/');
     };
 
-    const getCurrentPage = () => {
-        const path = location.pathname;
-        if (path.includes('/page1')) return 1;
-        if (path.includes('/page2')) return 2;
-        if (path.includes('/page3')) return 3;
-        if (path.includes('/page4')) return 4;
-        return 1; // default to page 1
-    };
-
     const getPageContent = () => {
         const path = location.pathname;
         if (path.includes('/page1')) {
@@ -51,45 +42,12 @@ const Header = () => {
         };
     };
 
-    const currentPage = getCurrentPage();
     const pageContent = getPageContent();
 
     return (
         <div className={styles.headerContainer}>
             <div className={styles.navigationSection}>
                 <div className={styles.header}>
-                    <div className={styles.items}>
-                        <Link 
-                            to="/page1" 
-                            className={`${styles.page} ${currentPage === 1 ? styles.activePage : ''}`}
-                        >
-                            Page 1
-                        </Link>
-                        <Link 
-                            to="/page2" 
-                            className={`${styles.page} ${currentPage === 2 ? styles.activePage : ''}`}
-                        >
-                            Page 2
-                        </Link>
-                        <Link 
-                            to="/page3" 
-                            className={`${styles.page} ${currentPage === 3 ? styles.activePage : ''}`}
-                        >
-                            Page 3
-                        </Link>
-                        <Link 
-                            to="/page4" 
-                            className={`${styles.page} ${currentPage === 4 ? styles.activePage : ''}`}
-                        >
-                            Page 4
-                        </Link>
-                        <Link to="/recommendations" className={styles.recommendationsButton}>
-                            Recommendations
-                        </Link>
-                        <Link to="/community" className={styles.communityButton}>
-                            Community
-                        </Link>
-                    </div>
                     {user && (
                         <div className={styles.userActions}>
                             <Link to="/profile" className={styles.profileButton}>

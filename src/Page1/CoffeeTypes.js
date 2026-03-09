@@ -2,7 +2,7 @@ import styles from './styles/CoffeeTypes.module.css'
 
 const CoffeeTypes = () => {
     return (
-        <div className={styles.container}>
+        <div id="coffee-types" className={styles.container}>
             <div className={styles.content}>
                 <div className={styles.Title}>Types of Coffee</div>
                 <div className={styles.coffeeTypesGrid}>

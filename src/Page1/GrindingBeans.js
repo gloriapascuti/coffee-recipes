@@ -2,7 +2,7 @@ import styles from './styles/GrindingBeans.module.css'
 
 const GrindingBeans = () => {
     return (
-        <div className={styles.container}>
+        <div id="grinding-beans" className={styles.container}>
             <div className={styles.content}>
                 <div className={styles.Title}>Grinding the beans</div>
                 <div className={styles.grindingGrid}>

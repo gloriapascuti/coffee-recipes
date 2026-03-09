@@ -24,7 +24,7 @@
     display: flex;
     gap: 40px;
     justify-content: center;
-    align-items: flex-start;
+    align-items: stretch;
 }
 
 .coffeeTypeCard {
@@ -37,6 +37,8 @@
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     text-align: center;
     border-top: 4px solid #8B4513;
+    display: flex;
+    flex-direction: column;
 }
 
 .coffeeTypeCard:hover {
@@ -90,6 +92,7 @@
     color: #555;
     font-family: Georgia, serif;
     font-weight: 400;
+    flex-grow: 1;
 }
 
 /* Responsive Design */

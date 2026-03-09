@@ -334,6 +334,18 @@ export const CoffeeProvider = ({ children }) => {
         }
     };
 
+    // Called after registration to hydrate context state from already-stored tokens
+    const setAuthenticatedUser = (userData) => {
+        setAccessToken(userData.access);
+        setRefreshToken(userData.refresh);
+        setUser({
+            id: userData.user_id,
+            username: userData.username,
+            twofa: userData.twofa,
+            is_special_admin: userData.is_special_admin || false,
+        });
+    };
+
     // Add logout function
     const logoutUser = () => {
         localStorage.removeItem('access_token');
@@ -692,6 +704,7 @@ export const CoffeeProvider = ({ children }) => {
             user,
             loginUser,
             logoutUser,
+            setAuthenticatedUser,
             accessToken,
             authenticatedFetch,
             verify2FALogin,

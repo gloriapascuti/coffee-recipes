@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useCoffee } from '../CoffeeContext';
+import { useLocation } from 'react-router-dom';
 import styles from './styles/MyRecipes.module.css';
 
 const API_URL = 'http://127.0.0.1:8000/api';
@@ -30,9 +31,13 @@ export default function MyRecipes() {
         authenticatedFetch
     } = useCoffee();
 
+    const location = useLocation();
+
     const [myRecipes, setMyRecipes] = useState([]);
     const [favoritesList, setFavoritesList] = useState([]);
-    const [activeTab, setActiveTab] = useState('my-recipes'); // 'my-recipes' or 'favorites'
+    const [activeTab, setActiveTab] = useState(
+        location.hash === '#favorites' ? 'favorites' : 'my-recipes'
+    );
     const [showAddForm, setShowAddForm] = useState(false);
     const [showEditForm, setShowEditForm] = useState(false);
     const [editingCoffee, setEditingCoffee] = useState(null);
@@ -284,7 +289,7 @@ export default function MyRecipes() {
                 </div>
             )}
 
-            <div className={styles.tabs}>
+            <div id="favorites" className={styles.tabs}>
                 <button
                     className={`${styles.tab} ${activeTab === 'my-recipes' ? styles.activeTab : ''}`}
                     onClick={() => setActiveTab('my-recipes')}
