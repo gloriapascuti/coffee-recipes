@@ -3,7 +3,7 @@ import { useCoffee } from '../CoffeeContext';
 import { useLocation } from 'react-router-dom';
 import styles from './styles/MyRecipes.module.css';
 
-const API_URL = 'http://127.0.0.1:8000/api';
+const API_URL = `${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/api`;
 
 function authHeaders() {
     const accessToken = localStorage.getItem("access_token");

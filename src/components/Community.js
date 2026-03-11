@@ -40,7 +40,7 @@ const Community = () => {
 
     const fetchChallenges = async () => {
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/challenges/', {
+            const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/api/challenges/`, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('access_token')}`
                 }
@@ -56,7 +56,7 @@ const Community = () => {
 
     const fetchNotifications = async () => {
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/notifications/', {
+            const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/api/notifications/`, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('access_token')}`
                 }
@@ -76,7 +76,7 @@ const Community = () => {
             const token = localStorage.getItem('access_token');
             console.log('Token exists:', !!token);
             
-            const response = await fetch('http://127.0.0.1:8000/api/available-users/', {
+            const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/api/available-users/`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -105,7 +105,7 @@ const Community = () => {
         setSuccess('');
 
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/challenges/', {
+            const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/api/challenges/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -132,7 +132,7 @@ const Community = () => {
 
     const handleRespondToChallenge = async (challengeId, response) => {
         try {
-            const result = await fetch(`http://127.0.0.1:8000/api/challenges/${challengeId}/respond/`, {
+            const result = await fetch(`${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/api/challenges/${challengeId}/respond/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -161,7 +161,7 @@ const Community = () => {
 
         setLoading(true);
         try {
-            const response = await fetch(`http://127.0.0.1:8000/api/challenges/${selectedChallenge}/submit-recipe/`, {
+            const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/api/challenges/${selectedChallenge}/submit-recipe/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -188,7 +188,7 @@ const Community = () => {
 
     const handleVote = async (challengeId, votedFor) => {
         try {
-            const response = await fetch(`http://127.0.0.1:8000/api/challenges/${challengeId}/vote/`, {
+            const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/api/challenges/${challengeId}/vote/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -211,7 +211,7 @@ const Community = () => {
 
     const markNotificationAsRead = async (notificationId) => {
         try {
-            await fetch(`http://127.0.0.1:8000/api/notifications/${notificationId}/read/`, {
+            await fetch(`${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/api/notifications/${notificationId}/read/`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('access_token')}`

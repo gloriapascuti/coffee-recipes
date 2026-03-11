@@ -3,7 +3,7 @@ import { useCoffee } from '../CoffeeContext';
 import PredictionCharts from './PredictionCharts';
 import styles from './styles/Prediction.module.css';
 
-const API_URL = 'http://127.0.0.1:8000/api';
+const API_URL = `${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/api`;
 
 export default function Prediction({ consumedCoffees }) {
     const { authenticatedFetch } = useCoffee();

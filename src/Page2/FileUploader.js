@@ -26,7 +26,7 @@ function FileUploader() {
 
         try {
             const accessToken = localStorage.getItem('access_token');
-            const response = await axios.post('http://127.0.0.1:8000/api/upload/', formData, {
+            const response = await axios.post(`${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/api/upload/`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                     ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
@@ -51,7 +51,7 @@ function FileUploader() {
     async function fetchFiles() {
         try {
             const accessToken = localStorage.getItem('access_token');
-            const response = await axios.get('http://127.0.0.1:8000/api/upload/', {
+            const response = await axios.get(`${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/api/upload/`, {
                 headers: {
                     ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
                 }
@@ -72,7 +72,7 @@ function FileUploader() {
 
     const handleDownload = (fileName) => {
         const link = document.createElement('a');
-        link.href = `http://127.0.0.1:8000/media/uploads/${fileName}`;
+        link.href = `${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/media/uploads/${fileName}`;
         link.download = fileName;
         link.click();
     };
@@ -93,7 +93,7 @@ function FileUploader() {
                 return;
             }
             
-            const response = await axios.delete(`http://127.0.0.1:8000/api/upload/${encodeURIComponent(fileName)}/`, {
+            const response = await axios.delete(`${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/api/upload/${encodeURIComponent(fileName)}/`, {
                 headers: {
                     ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
                 }

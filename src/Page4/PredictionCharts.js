@@ -4,7 +4,7 @@ import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Toolti
 import { useCoffee } from '../CoffeeContext';
 import styles from './styles/PredictionCharts.module.css';
 
-const API_URL = 'http://127.0.0.1:8000/api';
+const API_URL = `${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/api`;
 
 ChartJS.register(
     CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend,

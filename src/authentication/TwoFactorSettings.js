@@ -32,7 +32,7 @@ function TwoFactorSettings() {
         }
 
         try {
-            const response = await authenticatedFetch('http://127.0.0.1:8000/api/users/setup-2fa/', {
+            const response = await authenticatedFetch(`${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/api/users/setup-2fa/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -62,7 +62,7 @@ function TwoFactorSettings() {
         }
 
         try {
-            const response = await authenticatedFetch('http://127.0.0.1:8000/api/users/verify-2fa-setup/', {
+            const response = await authenticatedFetch(`${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/api/users/verify-2fa-setup/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -97,7 +97,7 @@ function TwoFactorSettings() {
 
     const handleDisable2FA = async () => {
         try {
-            const response = await authenticatedFetch('http://127.0.0.1:8000/api/users/disable-2fa/', {
+            const response = await authenticatedFetch(`${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/api/users/disable-2fa/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

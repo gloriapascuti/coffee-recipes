@@ -11,7 +11,7 @@
 //         if (userId === '1') {
 //             const token = localStorage.getItem('token');
 //             axios
-//                 .get('http://127.0.0.1:8000/api/users/', {
+//                 .get(`${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/api/users/`, {
 //                     headers: { Authorization: `Token ${token}` }
 //                 })
 //                 .then(res => setUsers(res.data))
@@ -77,7 +77,7 @@ export default function AdminUserTable() {
             console.log('AdminUserTable - Making API request to admin/users/ endpoint');
             
             axios
-                .get('http://127.0.0.1:8000/api/users/admin/users/', {
+                .get(`${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/api/users/admin/users/`, {
                     headers: { Authorization: `Bearer ${accessToken}` }
                 })
                 .then(res => {
@@ -102,7 +102,7 @@ export default function AdminUserTable() {
         
         try {
             await axios.post(
-                `http://127.0.0.1:8000/api/users/admin/verify-user/${userId}/`,
+                `${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/api/users/admin/verify-user/${userId}/`,
                 {},
                 { headers: { Authorization: `Bearer ${accessToken}` } }
             );
@@ -127,7 +127,7 @@ export default function AdminUserTable() {
         
         try {
             await axios.post(
-                `http://127.0.0.1:8000/api/users/admin/ban-user/${userId}/`,
+                `${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/api/users/admin/ban-user/${userId}/`,
                 {},
                 { headers: { Authorization: `Bearer ${accessToken}` } }
             );

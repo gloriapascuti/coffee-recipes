@@ -9,7 +9,7 @@ import MyOwnRecipes from "./MyOwnRecipes";
 import styles from "./styles/RUD.module.css";
 import AdminUserTable from "../components/AdminUserTable";
 
-const WS_URL = "ws://localhost:8000/ws/coffee/";
+const WS_URL = `${(process.env.REACT_APP_API_URL || 'http://localhost:8000').replace(/^http/, 'ws')}/ws/coffee/`;
 
 export default function RUD() {
     const {

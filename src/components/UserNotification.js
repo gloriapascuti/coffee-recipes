@@ -10,7 +10,7 @@ export default function UserNotification() {
     useEffect(() => {
         if (user && accessToken) {
             axios
-                .get('http://127.0.0.1:8000/api/users/notification-status/', {
+                .get(`${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/api/users/notification-status/`, {
                     headers: { Authorization: `Bearer ${accessToken}` }
                 })
                 .then(response => {

@@ -11,7 +11,7 @@ const Cards = () => {
 
     const fetchPopularRecipes = async () => {
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/most-popular/');
+            const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/api/most-popular/`);
             if (response.ok) {
                 const data = await response.json();
                 // Ensure we only show top 3 most liked recipes

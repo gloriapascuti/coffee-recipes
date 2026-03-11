@@ -27,7 +27,7 @@ export default function Register() {
         }
 
         try {
-            const resp = await fetch('http://127.0.0.1:8000/api/users/register/', {
+            const resp = await fetch(`${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/api/users/register/`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 

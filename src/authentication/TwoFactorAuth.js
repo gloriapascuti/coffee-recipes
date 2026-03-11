@@ -36,7 +36,7 @@ const TwoFactorAuth = () => {
             }
             // Call the backend endpoint to initiate 2FA setup (generate secret and QR code)
             const response = await authenticatedFetch(
-                'http://127.0.0.1:8000/api/users/setup-2fa/',
+                `${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/api/users/setup-2fa/`,
                 {
                     method: 'POST',
                     // Send email to associate with QR code (backend uses user.email, but sending explicitly might be good for clarity/future flexibility)
@@ -60,7 +60,7 @@ const TwoFactorAuth = () => {
              console.log('Access Token before setup verification fetch:', accessToken); // Keep this log
              // Call the backend endpoint to verify the code and enable 2FA
             const response = await authenticatedFetch(
-                'http://127.0.0.1:8000/api/users/verify-2fa-setup/',
+                `${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/api/users/verify-2fa-setup/`,
                 {
                     method: 'POST',
                     body: JSON.stringify({ code: verificationCode }),
@@ -90,7 +90,7 @@ const TwoFactorAuth = () => {
              console.log('Access Token before disable fetch:', accessToken); // Keep this log
             // Call the backend endpoint to disable 2FA
             const response = await authenticatedFetch(
-                'http://127.0.0.1:8000/api/users/disable-2fa/',
+                `${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/api/users/disable-2fa/`,
                 {
                     method: 'POST',
                 }

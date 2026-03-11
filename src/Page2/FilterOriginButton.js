@@ -14,8 +14,8 @@ const FilterOriginButton = ({ selectedOrigin, onFilter }) => {
     useEffect(() => {
         const fetchOrigins = async () => {
             try {
-                // const res = await fetch("http://127.0.0.1:8000/origins/");
-                const res = await fetch("http://127.0.0.1:8000/api/origins/");
+                // const res = await fetch(`${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/origins/`);
+                const res = await fetch(`${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/api/origins/`);
                 if (res.status === 404) {
                     throw new Error('Endpoint /api/origins/ not found (404)');
                 }

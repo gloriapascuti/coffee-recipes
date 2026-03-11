@@ -23,7 +23,7 @@ const InfiniteScroll = ({data, loading, getBackgroundColor, loadMoreData}) => {
                     headers['Authorization'] = `Bearer ${accessToken}`;
                 }
 
-                const response = await fetch('http://127.0.0.1:8000/api/challenges/', {
+                const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/api/challenges/`, {
                     headers
                 });
 
@@ -115,7 +115,7 @@ const InfiniteScroll = ({data, loading, getBackgroundColor, loadMoreData}) => {
         }
 
         try {
-            const response = await fetch(`http://127.0.0.1:8000/api/like/${coffee.id}/`, {
+            const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/api/like/${coffee.id}/`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${accessToken}`,

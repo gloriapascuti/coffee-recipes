@@ -27,10 +27,10 @@ export const useNetworkStatus = () => {
             }
 
             try {
-                // const response = await fetch('http://127.0.0.1:8000/coffee', {
+                // const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/coffee`, {
                 //     method: 'HEAD',
                 //     cache: 'no-cache'
-                const response = await fetch('http://127.0.0.1:8000/api/healthcheck/', {
+                const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/api/healthcheck/`, {
                     method: 'GET',
                     cache: 'no-cache'
                 });

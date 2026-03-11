@@ -13,8 +13,8 @@
 // };
 //
 // // Note trailing slash so Django doesn't redirect your POST/PUT with a 301
-// // const baseUrl = "http://127.0.0.1:8000/coffee/";
-// const baseUrl = "http://127.0.0.1:8000/api/coffee/";
+// // const baseUrl = `${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/coffee/`;
+// const baseUrl = `${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/api/coffee/`;
 //
 // // Helper to build headers with JSON + optional Token
 // function buildHeaders() {
@@ -190,7 +190,7 @@ export const useCoffee = () => {
 };
 
 // your DRF URLs
-const API_ROOT   = "http://127.0.0.1:8000/api";
+const API_ROOT   = `${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/api`;
 const COFFEE_URL = `${API_ROOT}/`;
 const USERS_URL = `${API_ROOT}/users/`;
 
@@ -383,7 +383,7 @@ export const CoffeeProvider = ({ children }) => {
                     throw new Error('No refresh token available');
                 }
                 
-                const refreshResponse = await fetch('http://127.0.0.1:8000/api/users/token/refresh/', {
+                const refreshResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/api/users/token/refresh/`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
