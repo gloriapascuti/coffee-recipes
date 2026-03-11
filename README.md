@@ -38,20 +38,20 @@ The API runs at `http://127.0.0.1:8000/api` and the frontend at `http://localhos
 
 ## ML model
 
-The heart disease risk model uses 12 features: age, sex, BMI, average daily caffeine, weekly caffeine total, systolic and diastolic blood pressure, hypertension, diabetes, family history of CHD, smoking status, and activity level.
+The heart disease risk model uses 24 features including age, sex, BMI, average daily caffeine, weekly caffeine total, systolic and diastolic blood pressure, cholesterol levels, hypertension, diabetes, family history of CHD, smoking status, and activity level. Best performing model: Gradient Boosting, trained on 59,057 samples.
 
 | Metric | Value |
 |--------|-------|
-| ROC-AUC | 0.999 |
-| Accuracy | 97.3% |
-| Precision | 87.7% |
-| Recall | 99.5% |
-| F1-Score | 0.932 |
+| ROC-AUC | 0.817 |
+| MCC | 0.075 |
+| Recall | 49.1% |
+| Precision | 24.3% |
+| Optimal threshold | 0.150 |
 
 To retrain the model:
 ```bash
 cd thesis_model
-python train_model.py --output_path ../backend/coffee_backend/ml_models
+python trained_model.py --output_path ../backend/coffee_backend/ml_models
 ```
 
 Risk predictions are for informational purposes only and are not a substitute for medical advice.
