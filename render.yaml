@@ -21,6 +21,15 @@ services:
           name: coffee-db
           property: connectionString
 
+  - type: web
+    name: coffee-recipes-websites
+    env: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: build
+    envVars:
+      - key: REACT_APP_API_URL
+        value: https://coffee-website-awsc.onrender.com
+
 databases:
   - name: coffee-db
     databaseName: coffee_db
