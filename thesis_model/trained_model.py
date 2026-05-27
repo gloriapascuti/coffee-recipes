@@ -1,6 +1,4 @@
 """
-Complete ML Pipeline: Train CVD Model + Optimize Threshold
-
 Usage:
     python trained_model.py --dataset_path /path/to/data.csv --output_path ./models_improved
 """
