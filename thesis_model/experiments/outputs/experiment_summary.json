@@ -1,0 +1,172 @@
+{
+  "split": {
+    "train": 37510,
+    "val": 12504,
+    "test": 12504
+  },
+  "best_hyperparameters": {
+    "Logistic Regression": {
+      "C": 1.0
+    },
+    "Random Forest": {
+      "n_estimators": 400,
+      "max_depth": 10,
+      "min_samples_leaf": 4
+    },
+    "Gradient Boosting": {
+      "n_estimators": 350,
+      "learning_rate": 0.05,
+      "max_depth": 3
+    }
+  },
+  "per_model_optimal_thresholds": {
+    "Logistic Regression": 0.5,
+    "Random Forest": 0.5,
+    "Gradient Boosting": 0.15,
+    "Ensemble (RF + GB)": 0.3
+  },
+  "fair_comparison_test": {
+    "Logistic Regression": {
+      "tau_opt": 0.5,
+      "accuracy": 0.7050543825975688,
+      "precision": 0.15213130818226359,
+      "recall": 0.7323113207547169,
+      "f1": 0.2519269776876268,
+      "roc_auc": 0.7861012851912045,
+      "mcc": 0.23345315381324913
+    },
+    "Random Forest": {
+      "tau_opt": 0.5,
+      "accuracy": 0.8127799104286628,
+      "precision": 0.19063406547865727,
+      "recall": 0.5424528301886793,
+      "f1": 0.28212204845139527,
+      "roc_auc": 0.7898580555321739,
+      "mcc": 0.23885918896761343
+    },
+    "Gradient Boosting": {
+      "tau_opt": 0.15,
+      "accuracy": 0.8573256557901472,
+      "precision": 0.22822299651567945,
+      "recall": 0.4634433962264151,
+      "f1": 0.3058365758754864,
+      "roc_auc": 0.8009206125924295,
+      "mcc": 0.25495308079577383
+    },
+    "Ensemble (RF + GB)": {
+      "tau_opt": 0.3,
+      "accuracy": 0.8071817018554063,
+      "precision": 0.19292730844793712,
+      "recall": 0.5790094339622641,
+      "f1": 0.2894193928676687,
+      "roc_auc": 0.7968186985243652,
+      "mcc": 0.25153642560714
+    }
+  },
+  "selection_criterion": "max validation ROC-AUC (Fawcett 2006), ensemble tie-breaker at <=0.001",
+  "best_model": "Gradient Boosting",
+  "optimal_threshold": 0.15,
+  "platt_parameters": {
+    "A": 0.8660961584630114,
+    "B": -0.25796295426859805
+  },
+  "final_test_metrics": {
+    "accuracy": 0.8573256557901472,
+    "precision": 0.22822299651567945,
+    "recall": 0.4634433962264151,
+    "f1": 0.3058365758754864,
+    "roc_auc": 0.8009206125924295,
+    "mcc": 0.25495308079577383
+  },
+  "learned_pp_study": [
+    {
+      "condition": "A. Raw model",
+      "tau_opt": 0.15,
+      "f1": 0.3058365758754864,
+      "recall": 0.4634433962264151,
+      "precision": 0.22822299651567945,
+      "mcc": 0.25495308079577383,
+      "roc_auc": 0.8009206125924295
+    },
+    {
+      "condition": "B. Platt only",
+      "tau_opt": 0.15,
+      "f1": 0.3043824701195219,
+      "recall": 0.45047169811320753,
+      "precision": 0.22984356197352587,
+      "mcc": 0.25230148984932327,
+      "roc_auc": 0.8009206125924295
+    },
+    {
+      "condition": "C. + clinical scoring",
+      "tau_opt": 0.15,
+      "f1": 0.3040062843676355,
+      "recall": 0.4563679245283019,
+      "precision": 0.22791519434628976,
+      "mcc": 0.2524035990039246,
+      "roc_auc": 0.7994327967780784
+    },
+    {
+      "condition": "D. + clinical + caffeine scoring",
+      "tau_opt": 0.15,
+      "f1": 0.30456852791878175,
+      "recall": 0.45990566037735847,
+      "precision": 0.2276707530647986,
+      "mcc": 0.2533047973643955,
+      "roc_auc": 0.7993454864933114
+    }
+  ],
+  "learned_pp_coefficients": {
+    "B. Platt only": {
+      "intercept": {
+        "beta": -0.24708438440274394,
+        "se": 0.07938973271617798,
+        "p_value": 0.001856379730231339
+      },
+      "logit(p_raw)": {
+        "beta": 0.8702845838224003,
+        "se": 0.031462440456527,
+        "p_value": 0.0
+      }
+    },
+    "C. + clinical scoring": {
+      "intercept": {
+        "beta": -0.6251585629360522,
+        "se": 0.1494587363617968,
+        "p_value": 2.8791897838775782e-05
+      },
+      "logit(p_raw)": {
+        "beta": 0.8091309156744666,
+        "se": 0.03733873430409492,
+        "p_value": 0.0
+      },
+      "clinical_score": {
+        "beta": 0.030199643203099237,
+        "se": 0.010279874919474513,
+        "p_value": 0.0033060965525892883
+      }
+    },
+    "D. + clinical + caffeine scoring": {
+      "intercept": {
+        "beta": -0.6076998405487223,
+        "se": 0.14962289192390707,
+        "p_value": 4.874939303611825e-05
+      },
+      "logit(p_raw)": {
+        "beta": 0.8098514667267409,
+        "se": 0.037334862828113616,
+        "p_value": 0.0
+      },
+      "clinical_score": {
+        "beta": 0.03007601837791081,
+        "se": 0.010279257430829173,
+        "p_value": 0.003434678653202683
+      },
+      "caffeine_score": {
+        "beta": -0.041139580883860695,
+        "se": 0.03134038751630329,
+        "p_value": 0.1892942309609027
+      }
+    }
+  }
+}

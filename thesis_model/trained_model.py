@@ -1,6 +1,8 @@
 """
 Usage:
-    python trained_model.py --dataset_path /path/to/data.csv --output_path ./models_improved
+    python trained_model.py
+    python trained_model.py --dataset_path /path/to/data.csv --output_path ./models
+    python trained_model.py --final_model "Gradient Boosting"
 """
 
 import pandas as pd
@@ -9,9 +11,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, VotingClassifier
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import (accuracy_score, precision_score, recall_score, f1_score, 
-                            roc_auc_score, classification_report, confusion_matrix, matthews_corrcoef)
-from sklearn.utils.class_weight import compute_class_weight
+from sklearn.metrics import (accuracy_score, precision_score, recall_score, f1_score,
+                            roc_auc_score, confusion_matrix, matthews_corrcoef)
 import joblib
 import os
 import argparse
@@ -23,15 +24,15 @@ warnings.filterwarnings('ignore')
 def load_and_preprocess_data(dataset_path):
     df = pd.read_csv(dataset_path)
     print(f"Loaded {len(df):,} records")
-    
-    n_cvd_deaths = df['cvd_death'].sum()
-    print(f"CVD deaths: {n_cvd_deaths:,} ({n_cvd_deaths/len(df)*100:.2f}%)")
-    
+
+    n_cvd_deaths = int(df['cvd_death'].sum())
+    print(f"CVD deaths: {n_cvd_deaths:,} ({n_cvd_deaths / len(df) * 100:.2f}%)")
+
     le_sex = LabelEncoder()
     le_activity = LabelEncoder()
     df['sex_encoded'] = le_sex.fit_transform(df['sex'])
     df['activity_level_encoded'] = le_activity.fit_transform(df['activity_level'])
-    
+
     feature_cols = [
         'age', 'sex_encoded', 'bmi',
         'avg_daily_caffeine_mg', 'total_caffeine_week_mg',
@@ -39,166 +40,193 @@ def load_and_preprocess_data(dataset_path):
         'has_hypertension', 'has_diabetes', 'has_family_history_chd',
         'is_smoker', 'activity_level_encoded'
     ]
-    
+
     if 'has_high_cholesterol' in df.columns:
         feature_cols.append('has_high_cholesterol')
-    
+
     lab_features = ['total_cholesterol', 'hdl_cholesterol', 'ldl_cholesterol', 'triglycerides', 'glucose']
     for lab in lab_features:
         if lab in df.columns:
             feature_cols.append(lab)
-    
-    caff_features = ['caffeine_per_kg', 'caffeine_per_bmi', 'caffeine_category', 
+
+    caff_features = ['caffeine_per_kg', 'caffeine_per_bmi', 'caffeine_category',
                     'caffeine_age_interaction', 'caffeine_hypertension_interaction', 'is_high_caffeine']
     for caff in caff_features:
         if caff in df.columns:
             feature_cols.append(caff)
-    
-    missing_counts = df[feature_cols].isna().sum()
-    if missing_counts.sum() > 0:
-        for col in feature_cols:
-            if df[col].isna().sum() > 0:
-                if df[col].dtype in ['int64', 'float64']:
-                    df[col] = df[col].fillna(df[col].median())
-                else:
-                    df[col] = df[col].fillna(df[col].mode()[0])
-    
+
+    for col in feature_cols:
+        if df[col].isna().sum() > 0:
+            if df[col].dtype in ['int64', 'float64']:
+                df[col] = df[col].fillna(df[col].median())
+            else:
+                df[col] = df[col].fillna(df[col].mode()[0])
+
     X = df[feature_cols].values
     y = df['cvd_death'].values
-    
-    print(f"Final dataset: {len(X):,} samples × {len(feature_cols)} features\n")
-    
+
+    print(f"Final dataset: {len(X):,} samples x {len(feature_cols)} features\n")
+
     encoders = {'sex': le_sex, 'activity_level': le_activity}
     return X, y, feature_cols, encoders
 
 
-def train_models(X_train, y_train, X_val, y_val):
-    print("Training models...")
-    class_weights = compute_class_weight('balanced', classes=np.unique(y_train), y=y_train)
-    
+def split_data_3way(X, y, test_size=0.20, val_size=0.20, random_state=42):
+    X_trainval, X_test, y_trainval, y_test = train_test_split(
+        X, y, test_size=test_size, random_state=random_state, stratify=y
+    )
+
+    val_relative = val_size / (1.0 - test_size)
+    X_train, X_val, y_train, y_val = train_test_split(
+        X_trainval, y_trainval, test_size=val_relative,
+        random_state=random_state, stratify=y_trainval
+    )
+
+    n = len(y)
+    print("Stratified 3-way split:")
+    print(f"  Train:      {len(y_train):>7,} ({len(y_train) / n * 100:5.1f}%) - {int(y_train.sum()):>5,} CVD deaths ({y_train.mean() * 100:.2f}%)")
+    print(f"  Validation: {len(y_val):>7,} ({len(y_val) / n * 100:5.1f}%) - {int(y_val.sum()):>5,} CVD deaths ({y_val.mean() * 100:.2f}%)")
+    print(f"  Test:       {len(y_test):>7,} ({len(y_test) / n * 100:5.1f}%) - {int(y_test.sum()):>5,} CVD deaths ({y_test.mean() * 100:.2f}%)\n")
+
+    return X_train, X_val, X_test, y_train, y_val, y_test
+
+
+def _evaluate_on(model, X, y, threshold=0.5):
+    y_pred_proba = model.predict_proba(X)[:, 1]
+    y_pred = (y_pred_proba >= threshold).astype(int)
+    return {
+        'y_pred': y_pred,
+        'y_pred_proba': y_pred_proba,
+        'accuracy': accuracy_score(y, y_pred),
+        'precision': precision_score(y, y_pred, zero_division=0),
+        'recall': recall_score(y, y_pred, zero_division=0),
+        'f1': f1_score(y, y_pred, zero_division=0),
+        'roc_auc': roc_auc_score(y, y_pred_proba),
+        'mcc': matthews_corrcoef(y, y_pred),
+    }
+
+
+def train_all_models(X_train, y_train, X_val, y_val):
+    print("Training models on the train split...")
+
     rf = RandomForestClassifier(
-        n_estimators=400, random_state=42, n_jobs=-1, class_weight='balanced',
-        max_depth=14, min_samples_split=4, min_samples_leaf=2
+        n_estimators=400, max_depth=10, min_samples_leaf=4, min_samples_split=4,
+        random_state=42, n_jobs=-1, class_weight='balanced'
     )
-    
     gb = GradientBoostingClassifier(
-        n_estimators=350, random_state=42, learning_rate=0.03, max_depth=4
+        n_estimators=350, max_depth=3, learning_rate=0.05, random_state=42
     )
-    
     lr = LogisticRegression(
-        max_iter=3000, random_state=42, class_weight='balanced', solver='lbfgs'
+        C=1.0, max_iter=3000, random_state=42, class_weight='balanced', solver='lbfgs'
     )
-    
+
     models = {'Logistic Regression': lr, 'Random Forest': rf, 'Gradient Boosting': gb}
-    
+
     results = {}
-    best_score = 0
-    best_model = None
-    best_model_name = None
-    
     for name, model in models.items():
         print(f"  Training {name}...")
         model.fit(X_train, y_train)
-        
-        y_pred = model.predict(X_val) # hard binary 0 (alive) or 1 (death)
-        y_pred_proba = model.predict_proba(X_val)[:, 1] # raw probability of death for each patient
-        
-        accuracy = accuracy_score(y_val, y_pred) # compares y_pred with y_val
-        precision = precision_score(y_val, y_pred, zero_division=0) # y_pred / y_val, zero_division is only to prevent crash -> false alarms
-        recall = recall_score(y_val, y_pred, zero_division=0) # false negatives
-        f1 = f1_score(y_val, y_pred, zero_division=0) # ( 2 x precision x recall ) / ( precision + recall ) -> forces balance between the two
-        roc_auc = roc_auc_score(y_val, y_pred_proba) # raw probability -> calculates the area under the ROC curve
-        mcc = matthews_corrcoef(y_val, y_pred)
+
+        y_pred = model.predict(X_val)
+        y_pred_proba = model.predict_proba(X_val)[:, 1]
 
         results[name] = {
-            'model': model, 'accuracy': accuracy, 'precision': precision,
-            'recall': recall, 'f1': f1, 'roc_auc': roc_auc, 'mcc': mcc,
-            'y_pred': y_pred, 'y_pred_proba': y_pred_proba
+            'model': model,
+            'accuracy': accuracy_score(y_val, y_pred),
+            'precision': precision_score(y_val, y_pred, zero_division=0),
+            'recall': recall_score(y_val, y_pred, zero_division=0),
+            'f1': f1_score(y_val, y_pred, zero_division=0),
+            'roc_auc': roc_auc_score(y_val, y_pred_proba),
+            'mcc': matthews_corrcoef(y_val, y_pred),
         }
-        
-        print(f"    ROC-AUC: {roc_auc:.3f}")
-        
-        if roc_auc > best_score:
-            best_score = roc_auc
-            best_model = model
-            best_model_name = name
-    
-    print(f"  Training Ensemble...")
-    ensemble = VotingClassifier(estimators=[('rf', rf), ('gb', gb)], voting='soft', weights=[1.0, 1.0]) # soft voting preserves confidence information
+        print(f"    [val] ROC-AUC = {results[name]['roc_auc']:.3f}, F1 = {results[name]['f1']:.3f}, Recall = {results[name]['recall']:.3f}")
+
+    print("  Training Ensemble (RF + GB, soft voting)...")
+    ensemble = VotingClassifier(estimators=[('rf', rf), ('gb', gb)], voting='soft', weights=[1.0, 1.0])
     ensemble.fit(X_train, y_train)
-    # rf for reducing variance
-    # gb for reducing bias
 
-    y_pred_ensemble = ensemble.predict(X_val)
-    y_pred_proba_ensemble = ensemble.predict_proba(X_val)[:, 1]
-    
-    accuracy_ensemble = accuracy_score(y_val, y_pred_ensemble)
-    precision_ensemble = precision_score(y_val, y_pred_ensemble, zero_division=0)
-    recall_ensemble = recall_score(y_val, y_pred_ensemble, zero_division=0)
-    f1_ensemble = f1_score(y_val, y_pred_ensemble, zero_division=0)
-    roc_auc_ensemble = roc_auc_score(y_val, y_pred_proba_ensemble)
-    mcc_ensemble = matthews_corrcoef(y_val, y_pred_ensemble)
-    
+    y_pred = ensemble.predict(X_val)
+    y_pred_proba = ensemble.predict_proba(X_val)[:, 1]
+
     results['Ensemble (RF + GB)'] = {
-        'model': ensemble, 'accuracy': accuracy_ensemble, 'precision': precision_ensemble,
-        'recall': recall_ensemble, 'f1': f1_ensemble, 'roc_auc': roc_auc_ensemble, 'mcc': mcc_ensemble,
-        'y_pred': y_pred_ensemble, 'y_pred_proba': y_pred_proba_ensemble
+        'model': ensemble,
+        'accuracy': accuracy_score(y_val, y_pred),
+        'precision': precision_score(y_val, y_pred, zero_division=0),
+        'recall': recall_score(y_val, y_pred, zero_division=0),
+        'f1': f1_score(y_val, y_pred, zero_division=0),
+        'roc_auc': roc_auc_score(y_val, y_pred_proba),
+        'mcc': matthews_corrcoef(y_val, y_pred),
     }
-    
-    print(f"    ROC-AUC: {roc_auc_ensemble:.3f}")
-    
-    if roc_auc_ensemble >= best_score - 0.001:
-        best_score = roc_auc_ensemble
-        best_model = ensemble
-        best_model_name = 'Ensemble (RF + GB)'
-    elif roc_auc_ensemble > best_score:
-        best_score = roc_auc_ensemble
-        best_model = ensemble
-        best_model_name = 'Ensemble (RF + GB)'
-    
-    print(f"\nBest model: {best_model_name} (ROC-AUC: {best_score:.3f})\n")
-    
-    return best_model, best_model_name, results
+    print(f"    [val] ROC-AUC = {results['Ensemble (RF + GB)']['roc_auc']:.3f}, F1 = {results['Ensemble (RF + GB)']['f1']:.3f}, Recall = {results['Ensemble (RF + GB)']['recall']:.3f}")
+
+    return results
 
 
-def optimize_threshold(model, scaler, X_test, y_test):
-    print("Optimizing threshold...")
-    
-    y_pred_proba = model.predict_proba(X_test)[:, 1]
+def select_threshold_on_validation(model, X_val, y_val):
+    print("Selecting classification threshold on validation set...")
+
+    y_pred_proba = model.predict_proba(X_val)[:, 1]
     thresholds = [0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.40, 0.50]
-    results = []
-    
-    print(f"\n{'Threshold':<12} {'Recall':<12} {'Precision':<12} {'F1-Score':<12}")
-    print("-" * 60)
-    
-    for threshold in thresholds:
-        y_pred = (y_pred_proba >= threshold).astype(int)
-        
-        recall = recall_score(y_test, y_pred, zero_division=0)
-        precision = precision_score(y_test, y_pred, zero_division=0)
-        f1 = f1_score(y_test, y_pred, zero_division=0)
-        
-        true_positives = ((y_test == 1) & (y_pred == 1)).sum()
-        false_positives = ((y_test == 0) & (y_pred == 1)).sum()
-        
-        results.append({
-            'threshold': threshold, 'recall': recall, 'precision': precision,
-            'f1': f1, 'tp': true_positives, 'fp': false_positives
+    rows = []
+
+    print(f"\n  {'tau':<6} {'Recall':<8} {'Prec':<8} {'F1':<8} {'MCC':<8} {'TP':<6} {'FP':<6}")
+    print("  " + "-" * 56)
+    for tau in thresholds:
+        y_pred = (y_pred_proba >= tau).astype(int)
+
+        recall = recall_score(y_val, y_pred, zero_division=0)
+        precision = precision_score(y_val, y_pred, zero_division=0)
+        f1 = f1_score(y_val, y_pred, zero_division=0)
+        mcc = matthews_corrcoef(y_val, y_pred)
+
+        true_positives = ((y_val == 1) & (y_pred == 1)).sum()
+        false_positives = ((y_val == 0) & (y_pred == 1)).sum()
+
+        rows.append({
+            'threshold': tau, 'recall': recall, 'precision': precision,
+            'f1': f1, 'mcc': mcc, 'tp': int(true_positives), 'fp': int(false_positives)
         })
-        
-        print(f"{threshold:<12.2f} {recall:<12.3f} {precision:<12.3f} {f1:<12.3f}")
-    
-    best_by_f1 = max(results, key=lambda x: x['f1'])
-    
-    print(f"\nOptimal threshold: {best_by_f1['threshold']:.2f}")
-    print(f"  Recall: {best_by_f1['recall']:.1%}, Precision: {best_by_f1['precision']:.1%}, F1: {best_by_f1['f1']:.3f}\n")
-    
-    return best_by_f1['threshold'], results
+        print(f"  {tau:<6.2f} {recall:<8.3f} {precision:<8.3f} {f1:<8.3f} {mcc:<8.3f} {int(true_positives):<6d} {int(false_positives):<6d}")
+
+    best = max(rows, key=lambda x: x['f1'])
+    print(f"\n  Optimal threshold (max F1): tau = {best['threshold']:.2f}")
+    print(f"  Recall = {best['recall']:.1%}, Precision = {best['precision']:.1%}, F1 = {best['f1']:.3f}\n")
+
+    return best['threshold'], rows
+
+
+def final_test_evaluation(model, threshold, X_test, y_test, model_name):
+    print("=" * 60)
+    print(f"FINAL TEST-SET EVALUATION - {model_name} @ tau = {threshold:.2f}")
+    print("=" * 60)
+
+    y_pred_proba = model.predict_proba(X_test)[:, 1]
+    y_pred = (y_pred_proba >= threshold).astype(int)
+
+    metrics = {
+        'accuracy': accuracy_score(y_test, y_pred),
+        'precision': precision_score(y_test, y_pred, zero_division=0),
+        'recall': recall_score(y_test, y_pred, zero_division=0),
+        'f1': f1_score(y_test, y_pred, zero_division=0),
+        'roc_auc': roc_auc_score(y_test, y_pred_proba),
+        'mcc': matthews_corrcoef(y_test, y_pred),
+    }
+    cm = confusion_matrix(y_test, y_pred)
+
+    print(f"  Accuracy:  {metrics['accuracy']:.3f}")
+    print(f"  Precision: {metrics['precision']:.3f}")
+    print(f"  Recall:    {metrics['recall']:.3f}")
+    print(f"  F1-Score:  {metrics['f1']:.3f}")
+    print(f"  ROC-AUC:   {metrics['roc_auc']:.3f}")
+    print(f"  MCC:       {metrics['mcc']:.3f}")
+    print(f"\n  Confusion Matrix [test set]:")
+    print(f"    TN = {cm[0, 0]:>5,}   FP = {cm[0, 1]:>5,}")
+    print(f"    FN = {cm[1, 0]:>5,}   TP = {cm[1, 1]:>5,}\n")
+
+    return metrics, cm
 
 
 def get_feature_importance_from_model(model, feature_names):
-    from sklearn.ensemble import VotingClassifier
-    
     if isinstance(model, VotingClassifier):
         importances_list = []
         for name, estimator in model.named_estimators_.items():
@@ -215,7 +243,7 @@ def get_feature_importance_from_model(model, feature_names):
         avg_importances = coef / coef.sum()
     else:
         raise ValueError(f"Model type {type(model)} does not support feature importances")
-    
+
     return (avg_importances / avg_importances.sum()) * 100
 
 
@@ -242,7 +270,6 @@ def get_readable_feature_names(feature_names):
         'caffeine_hypertension_interaction': 'Caffeine Hypertension Interaction',
         'is_high_caffeine': 'Is High Caffeine',
     }
-    
     return [name_mapping.get(name, name.replace('_', ' ').title()) for name in feature_names]
 
 
@@ -252,93 +279,60 @@ def plot_feature_importance(model, feature_names, output_path=None):
     except ImportError:
         print("matplotlib not available, skipping plot")
         return
-    
+
     importances = get_feature_importance_from_model(model, feature_names)
     readable_names = get_readable_feature_names(feature_names)
-    
+
     sorted_indices = np.argsort(importances)[::-1]
     sorted_importances = importances[sorted_indices]
     sorted_names = [readable_names[i] for i in sorted_indices]
-    
+
     plt.figure(figsize=(10, 6))
-    bars = plt.barh(sorted_names, sorted_importances, edgecolor="black", color='steelblue')
+    bars = plt.barh(sorted_names, sorted_importances, edgecolor='black', color='steelblue')
     plt.xlabel("Relative Contribution to CVD Risk Prediction (%)", fontsize=12)
     plt.title("Feature Contributions to CVD Death Prediction", fontsize=14, fontweight='bold')
-    
+
     max_importance = sorted_importances.max()
     plt.xlim(0, max_importance * 1.2)
-    
+
     for bar in bars:
         width = bar.get_width()
         plt.text(width + max_importance * 0.02, bar.get_y() + bar.get_height() / 2,
-                f"{width:.1f}%", va="center", fontsize=10, fontweight='bold')
-    
+                 f"{width:.1f}%", va='center', fontsize=10, fontweight='bold')
+
     plt.gca().invert_yaxis()
     plt.tight_layout()
-    
+
     if output_path:
         plt.savefig(output_path, dpi=300, bbox_inches='tight')
         print(f"Feature importance plot saved to {output_path}")
     else:
         plt.show()
-    
+
     print("\nFeature Importances:")
     for name, imp in zip(sorted_names, sorted_importances):
         print(f"{name:40s}: {imp:6.2f}%")
 
 
-def evaluate_model_detailed(best_model, best_model_name, results, y_val):
-    print("\nDetailed Model Evaluation")
-    print(f"Best Model: {best_model_name}")
-    
-    best_results = results[best_model_name]
-    
-    print(f"\nMetrics:")
-    print(f"  Accuracy:  {best_results['accuracy']:.3f}")
-    print(f"  Precision: {best_results['precision']:.3f}")
-    print(f"  Recall:    {best_results['recall']:.3f}")
-    print(f"  F1-Score:  {best_results['f1']:.3f}")
-    print(f"  ROC-AUC:   {best_results['roc_auc']:.3f}")
-    print(f"  MCC:    {best_results['mcc']:.3f}")
-    
-    cm = confusion_matrix(y_val, best_results['y_pred'])
-    print(f"\nConfusion Matrix:")
-    print(f"  True Negatives:  {cm[0,0]:,}")
-    print(f"  False Positives: {cm[0,1]:,}")
-    print(f"  False Negatives: {cm[1,0]:,}")
-    print(f"  True Positives:  {cm[1,1]:,}")
-    
-    print("\nAll Models Comparison:")
-    print(f"{'Model':<30} {'ROC-AUC':>10}")
-    print("-" * 45)
-    for name, metrics in results.items():
-        print(f"{name:<30} {metrics['roc_auc']:>10.3f}")
-
-
 def save_model(model, scaler, encoders, feature_names, optimal_threshold, output_path):
     os.makedirs(output_path, exist_ok=True)
-    
+
     joblib.dump(model, os.path.join(output_path, 'heart_disease_model.pkl'))
     joblib.dump(scaler, os.path.join(output_path, 'scaler.pkl'))
     joblib.dump(encoders, os.path.join(output_path, 'encoders.pkl'))
     joblib.dump(feature_names, os.path.join(output_path, 'feature_names.pkl'))
-    
+
     with open(os.path.join(output_path, 'optimal_threshold.txt'), 'w') as f:
         f.write(f"{optimal_threshold:.3f}\n")
-    
+
     print(f"\nModel artifacts saved to {output_path}")
 
 
-def save_run_metrics(results, best_model_name, threshold_results, optimal_threshold,
-                     output_path, dataset_path, n_samples, n_features, test_size, random_state):
-    """
-    Persist per-model metrics and threshold search results to CSV files.
-    Appends a new block of rows on every run.
-    """
+def save_run_metrics(results, final_model_name, test_metrics, threshold_results, optimal_threshold,
+                     output_path, dataset_path, n_samples, n_features, split_config, random_state):
     os.makedirs(output_path, exist_ok=True)
     timestamp = datetime.utcnow().isoformat()
 
-    # Per-model metrics
     model_rows = []
     for name, metrics in results.items():
         model_rows.append({
@@ -346,8 +340,9 @@ def save_run_metrics(results, best_model_name, threshold_results, optimal_thresh
             'dataset_path': dataset_path,
             'n_samples': n_samples,
             'n_features': n_features,
-            'test_size': test_size,
+            'split_config': split_config,
             'random_state': random_state,
+            'split': 'validation',
             'model_name': name,
             'accuracy': metrics['accuracy'],
             'precision': metrics['precision'],
@@ -355,19 +350,33 @@ def save_run_metrics(results, best_model_name, threshold_results, optimal_thresh
             'f1': metrics['f1'],
             'roc_auc': metrics['roc_auc'],
             'mcc': metrics['mcc'],
-            'is_best_model': int(name == best_model_name),
+            'is_final_model': int(name == final_model_name),
         })
 
-    model_df = pd.DataFrame(model_rows)
+    model_rows.append({
+        'timestamp': timestamp,
+        'dataset_path': dataset_path,
+        'n_samples': n_samples,
+        'n_features': n_features,
+        'split_config': split_config,
+        'random_state': random_state,
+        'split': 'test',
+        'model_name': final_model_name,
+        'accuracy': test_metrics['accuracy'],
+        'precision': test_metrics['precision'],
+        'recall': test_metrics['recall'],
+        'f1': test_metrics['f1'],
+        'roc_auc': test_metrics['roc_auc'],
+        'mcc': test_metrics['mcc'],
+        'is_final_model': 1,
+    })
+
     model_metrics_path = os.path.join(output_path, 'model_metrics.csv')
-    model_df.to_csv(
-        model_metrics_path,
-        mode='a',
-        header=not os.path.exists(model_metrics_path),
-        index=False,
+    pd.DataFrame(model_rows).to_csv(
+        model_metrics_path, mode='a',
+        header=not os.path.exists(model_metrics_path), index=False
     )
 
-    # Threshold search metrics (for the best model)
     threshold_rows = []
     for r in threshold_results:
         threshold_rows.append({
@@ -375,25 +384,23 @@ def save_run_metrics(results, best_model_name, threshold_results, optimal_thresh
             'dataset_path': dataset_path,
             'n_samples': n_samples,
             'n_features': n_features,
-            'test_size': test_size,
+            'split_config': split_config,
             'random_state': random_state,
-            'best_model_name': best_model_name,
+            'final_model_name': final_model_name,
             'best_threshold': optimal_threshold,
             'threshold': r['threshold'],
             'recall': r['recall'],
             'precision': r['precision'],
             'f1': r['f1'],
+            'mcc': r['mcc'],
             'true_positives': r['tp'],
             'false_positives': r['fp'],
         })
 
-    thresholds_df = pd.DataFrame(threshold_rows)
     thresholds_path = os.path.join(output_path, 'threshold_metrics.csv')
-    thresholds_df.to_csv(
-        thresholds_path,
-        mode='a',
-        header=not os.path.exists(thresholds_path),
-        index=False,
+    pd.DataFrame(threshold_rows).to_csv(
+        thresholds_path, mode='a',
+        header=not os.path.exists(thresholds_path), index=False
     )
 
     print(f"\nRun metrics appended to:")
@@ -402,76 +409,75 @@ def save_run_metrics(results, best_model_name, threshold_results, optimal_thresh
 
 
 def main():
+    here = os.path.dirname(os.path.abspath(__file__))
+    default_data = os.path.join(here, 'data', 'nhanes_cvd_training_data.csv')
+    default_out = os.path.join(here, 'models')
+
     parser = argparse.ArgumentParser(description='Train CVD prediction model')
-    parser.add_argument('--dataset_path', type=str, 
-                       default='/Users/filip/Desktop/NHANES 1988-2018 Archive/nhanes_cvd_training_data_IMPROVED.csv',
-                       help='Path to training data CSV')
-    parser.add_argument('--output_path', type=str, default='./models_improved',
-                       help='Path to save trained model')
-    parser.add_argument('--test_size', type=float, default=0.2,
-                       help='Test set size (default: 0.2)')
-    parser.add_argument('--random_state', type=int, default=42,
-                       help='Random state for reproducibility')
-    
+    parser.add_argument('--dataset_path', type=str, default=default_data)
+    parser.add_argument('--output_path', type=str, default=default_out)
+    parser.add_argument('--test_size', type=float, default=0.20)
+    parser.add_argument('--val_size', type=float, default=0.20)
+    parser.add_argument('--random_state', type=int, default=42)
+    parser.add_argument('--final_model', type=str, default='Gradient Boosting',
+                        choices=['Logistic Regression', 'Random Forest',
+                                 'Gradient Boosting', 'Ensemble (RF + GB)'])
     args = parser.parse_args()
-    
+
     if not os.path.exists(args.dataset_path):
         print(f"Error: Dataset not found at {args.dataset_path}")
         return
-    
+
     X, y, feature_names, encoders = load_and_preprocess_data(args.dataset_path)
-    
-    print(f"Splitting data (test_size={args.test_size})...")
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=args.test_size, random_state=args.random_state, stratify=y
+
+    print(f"Splitting data (train/val/test)...")
+    X_train, X_val, X_test, y_train, y_val, y_test = split_data_3way(
+        X, y, test_size=args.test_size, val_size=args.val_size, random_state=args.random_state
     )
-    print(f"  Training: {len(X_train):,} samples, Test: {len(X_test):,} samples\n")
-    
+
     print("Scaling features...")
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
+    X_val_scaled = scaler.transform(X_val)
     X_test_scaled = scaler.transform(X_test)
     print("  Features standardized\n")
-    
-    best_model, best_model_name, results = train_models(X_train_scaled, y_train, X_test_scaled, y_test)
-    
-    evaluate_model_detailed(best_model, best_model_name, results, y_test)
-    
-    optimal_threshold, threshold_results = optimize_threshold(best_model, scaler, X_test_scaled, y_test)
 
-    save_run_metrics(
-        results=results,
-        best_model_name=best_model_name,
-        threshold_results=threshold_results,
-        optimal_threshold=optimal_threshold,
-        output_path=args.output_path,
-        dataset_path=args.dataset_path,
-        n_samples=len(X),
-        n_features=len(feature_names),
-        test_size=args.test_size,
-        random_state=args.random_state,
-    )
-    
-    print("Saving model...")
-    save_model(best_model, scaler, encoders, feature_names, optimal_threshold, args.output_path)
-    
+    results = train_all_models(X_train_scaled, y_train, X_val_scaled, y_val)
+
+    print("\nValidation-set comparison:")
+    print(f"  {'Model':<25} {'ROC-AUC':>8} {'F1':>8} {'Recall':>8}")
+    for name, r in results.items():
+        print(f"  {name:<25} {r['roc_auc']:>8.3f} {r['f1']:>8.3f} {r['recall']:>8.3f}")
+
+    final_model = results[args.final_model]['model']
+    print(f"\nFinal model: {args.final_model}")
+
+    optimal_threshold, threshold_results = select_threshold_on_validation(final_model, X_val_scaled, y_val)
+
+    test_metrics, _ = final_test_evaluation(final_model, optimal_threshold, X_test_scaled, y_test, args.final_model)
+
+    save_model(final_model, scaler, encoders, feature_names, optimal_threshold, args.output_path)
+
+    split_config = f"{1 - args.test_size - args.val_size:.0%}/{args.val_size:.0%}/{args.test_size:.0%}"
+    save_run_metrics(results, args.final_model, test_metrics, threshold_results, optimal_threshold,
+                     args.output_path, args.dataset_path, len(X), len(feature_names),
+                     split_config, args.random_state)
+
     print("\nGenerating feature importance plot...")
     try:
         plot_path = os.path.join(args.output_path, 'feature_importance_cvd.png')
-        plot_feature_importance(best_model, feature_names, output_path=plot_path)
+        plot_feature_importance(final_model, feature_names, output_path=plot_path)
     except Exception as e:
         print(f"Could not generate plot: {e}")
-    
-    opt_result = [r for r in threshold_results if r['threshold'] == optimal_threshold][0]
+
     print(f"\n{'='*60}")
     print("TRAINING COMPLETE!")
     print(f"{'='*60}")
     print(f"Dataset: {len(X):,} samples, {len(feature_names)} features")
-    print(f"Best model: {best_model_name}")
-    print(f"ROC-AUC: {results[best_model_name]['roc_auc']:.3f}")
-    print(f"MCC: {results[best_model_name]['mcc']:.3f}")
+    print(f"Best model: {args.final_model}")
+    print(f"ROC-AUC: {test_metrics['roc_auc']:.3f}")
+    print(f"MCC: {test_metrics['mcc']:.3f}")
     print(f"Optimal threshold: {optimal_threshold:.3f}")
-    print(f"Recall: {opt_result['recall']:.1%}, Precision: {opt_result['precision']:.1%}")
     print(f"Model saved to: {args.output_path}")
     print(f"{'='*60}")
 
