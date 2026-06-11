@@ -160,16 +160,12 @@ def verify_2fa_login(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def setup_2fa(request):
-    """
-    Sets up 2FA with email and generates QR code
-    """
     user = request.user
     email = request.data.get('email')
     
     if not email:
         return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
-    
-    # Generate a new secret
+
     secret = pyotp.random_base32()
     user.totp_secret = secret
     user.twofa_email = email
@@ -177,14 +173,12 @@ def setup_2fa(request):
 
     totp = pyotp.TOTP(secret)
     qr_code_url = totp.provisioning_uri(email, issuer_name='Coffee Website')
-    
-    # Generate QR code image
+
     qr = qrcode.QRCode(version=1, box_size=10, border=5)
     qr.add_data(qr_code_url)
     qr.make(fit=True)
     img = qr.make_image(fill_color="black", back_color="white")
-    
-    # Convert to base64
+
     buffered = BytesIO()
     img.save(buffered, format="PNG")
     qr_code = base64.b64encode(buffered.getvalue()).decode()
@@ -197,9 +191,6 @@ def setup_2fa(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def verify_2fa_setup(request):
-    """
-    Verifies the 2FA setup code and enables 2FA
-    """
     user = request.user
     code = request.data.get('code')
     
@@ -211,7 +202,7 @@ def verify_2fa_setup(request):
 
     totp = pyotp.TOTP(user.totp_secret)
     if totp.verify(code):
-        user.twofa = True  # Using new field name
+        user.twofa = True
         user.save()
         return Response({'message': '2FA enabled successfully'})
     else:

@@ -1,0 +1,5 @@
+model,tau_opt,tn,fp,fn,tp
+Logistic Regression,0.5,8195,3461,227,621
+Random Forest,0.5,9703,1953,388,460
+Gradient Boosting,0.15,10327,1329,455,393
+Ensemble (RF + GB),0.3,9602,2054,357,491

@@ -1,0 +1,33 @@
+IMPROVED Features for CVD prediction model:
+============================================================
+
+ORIGINAL FEATURES:
+  • age
+  • bmi
+  • systolic_bp
+  • diastolic_bp
+  • has_hypertension
+  • has_diabetes
+  • has_family_history_chd
+  • is_smoker
+  • has_high_cholesterol
+  • avg_daily_caffeine_mg
+  • total_caffeine_week_mg
+
+NEW LAB VALUES:
+  • total_cholesterol
+  • hdl_cholesterol
+  • ldl_cholesterol
+  • triglycerides
+  • glucose
+
+NEW CAFFEINE FEATURES:
+  • caffeine_per_kg
+  • caffeine_per_bmi
+  • caffeine_category
+  • caffeine_age_interaction
+  • caffeine_hypertension_interaction
+  • is_high_caffeine
+
+Total features: 32
+Target: cvd_death

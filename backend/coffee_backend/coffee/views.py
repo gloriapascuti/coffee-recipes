@@ -1142,14 +1142,22 @@ def generate_prediction(request):
         period_days = 1  # Avoid division by zero
     
     # Get ML model prediction
-    ml_prediction = predict_heart_disease_risk(
-        health_profile=health_profile,
-        bp_entry=bp_entry,
-        avg_daily_caffeine=avg_daily_caffeine,
-        total_caffeine_week=total_caffeine,
-        period_days=period_days
-    )
-    
+    try:
+        ml_prediction = predict_heart_disease_risk(
+            health_profile=health_profile,
+            bp_entry=bp_entry,
+            avg_daily_caffeine=avg_daily_caffeine,
+            total_caffeine_week=total_caffeine,
+            period_days=period_days
+        )
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).exception("Prediction failed")
+        return Response(
+            {'error': 'Risk prediction is temporarily unavailable. Please try again later.'},
+            status=status.HTTP_503_SERVICE_UNAVAILABLE,
+        )
+
     risk_probability = ml_prediction['risk_probability']
     risk_percentage = ml_prediction['risk_percentage']
     risk_category = ml_prediction['risk_category']
