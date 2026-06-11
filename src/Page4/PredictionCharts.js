@@ -46,17 +46,19 @@ export default function PredictionCharts({ prediction, period, consumedCoffees }
                 allConsumed.forEach(consumed => {
                     const consumedDate = new Date(consumed.consumed_at);
                     if (consumedDate >= startDate) {
-                        const date = consumedDate.toLocaleDateString();
+                        const date = [
+                            consumedDate.getFullYear(),
+                            String(consumedDate.getMonth() + 1).padStart(2, '0'),
+                            String(consumedDate.getDate()).padStart(2, '0'),
+                        ].join('-');
                         if (!dailyCaffeine[date]) {
                             dailyCaffeine[date] = 0;
                         }
                         dailyCaffeine[date] += consumed.coffee?.caffeine_mg || 95;
                     }
                 });
-                
-                const sortedDates = Object.keys(dailyCaffeine).sort((a, b) => 
-                    new Date(a) - new Date(b)
-                );
+
+                const sortedDates = Object.keys(dailyCaffeine).sort();
                 
                 setCaffeineHistory({
                     labels: sortedDates,
@@ -99,8 +101,8 @@ export default function PredictionCharts({ prediction, period, consumedCoffees }
     // Chart 1: Daily Caffeine Consumption Trend
     const dailyCaffeineData = caffeineHistory ? {
         labels: caffeineHistory.labels.map(date => {
-            const d = new Date(date);
-            return `${d.getMonth() + 1}/${d.getDate()}`;
+            const [, month, day] = date.split('-');
+            return `${parseInt(month, 10)}/${parseInt(day, 10)}`;
         }),
         datasets: [{
             label: 'Daily Caffeine (mg)',

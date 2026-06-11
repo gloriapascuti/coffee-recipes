@@ -230,58 +230,46 @@ def predict_heart_disease_risk(health_profile, bp_entry, avg_daily_caffeine, tot
             - risk_percentage: float (0-100)
             - risk_category: str ('low', 'moderate', 'high')
     """
-    try:
-        components = load_model_components()
-        model = components['model']
-        scaler = components['scaler']
-        feature_names = components['feature_names']
+    components = load_model_components()
+    model = components['model']
+    scaler = components['scaler']
+    feature_names = components['feature_names']
 
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.info(f"Model expects {len(feature_names)} features: {feature_names}")
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info(f"Model expects {len(feature_names)} features: {feature_names}")
 
-        features = prepare_features(
-            health_profile, bp_entry, avg_daily_caffeine,
-            total_caffeine_week, period_days
+    features = prepare_features(
+        health_profile, bp_entry, avg_daily_caffeine,
+        total_caffeine_week, period_days
+    )
+
+    logger.info(f"Prepared features shape: {features.shape}")
+
+    if features.shape[1] != len(feature_names):
+        error_msg = (
+            f"Feature mismatch! Model expects {len(feature_names)} features "
+            f"but got {features.shape[1]}"
         )
-
-        logger.info(f"Prepared features shape: {features.shape}")
-
-        if features.shape[1] != len(feature_names):
-            error_msg = f"Feature mismatch! Model expects {len(feature_names)} features but got {features.shape[1]}"
-            logger.error(error_msg)
-            raise ValueError(error_msg)
-
-        features_scaled = scaler.transform(features)
-
-        risk_probability = float(model.predict_proba(features_scaled)[0][1])
-        risk_percentage = risk_probability * 100
-
-        if risk_probability < RISK_LOW_MAX:
-            risk_category = 'low'
-        elif risk_probability < RISK_MODERATE_MAX:
-            risk_category = 'moderate'
-        else:
-            risk_category = 'high'
-
-        logger.info(f"risk={risk_probability:.4f}  category={risk_category}")
-
-        return {
-            'risk_probability': float(risk_probability),
-            'risk_percentage': round(risk_percentage, 2),
-            'risk_category': risk_category
-        }
-
-    except Exception as e:
-        import logging
-        import traceback
-        logger = logging.getLogger(__name__)
-        error_msg = f"ML model prediction failed: {str(e)}\n{traceback.format_exc()}"
         logger.error(error_msg)
-        print(f"ERROR in predict_heart_disease_risk: {error_msg}")
+        raise ValueError(error_msg)
 
-        return {
-            'risk_probability': 0.07,
-            'risk_percentage': 7.0,
-            'risk_category': 'moderate'
-        }
+    features_scaled = scaler.transform(features)
+
+    risk_probability = float(model.predict_proba(features_scaled)[0][1])
+    risk_percentage = risk_probability * 100
+
+    if risk_probability < RISK_LOW_MAX:
+        risk_category = 'low'
+    elif risk_probability < RISK_MODERATE_MAX:
+        risk_category = 'moderate'
+    else:
+        risk_category = 'high'
+
+    logger.info(f"risk={risk_probability:.4f}  category={risk_category}")
+
+    return {
+        'risk_probability': float(risk_probability),
+        'risk_percentage': round(risk_percentage, 2),
+        'risk_category': risk_category
+    }
