@@ -6,9 +6,10 @@ import pandas as pd
 import os
 from pathlib import Path
 
-# Define paths
-workspace_dir = Path("/Users/filip/Desktop/NHANES 1988-2018 Archive")
-thesis_dir = Path("/Users/filip/Documents/gloria/UBB/facultate/Anul II/semester2/coffee-website/thesis_dataset/Data")
+# Define paths (relative to this repo)
+repo_root = Path(__file__).resolve().parents[3]
+thesis_dir = repo_root / "thesis_dataset" / "Data"
+workspace_dir = repo_root.parent / "NHANES 1988-2018 Archive"
 output_dir = workspace_dir / "harmonized"
 
 # Create output directory

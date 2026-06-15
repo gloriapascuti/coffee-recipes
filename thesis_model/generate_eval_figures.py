@@ -5,8 +5,8 @@ Run this from the thesis_model/ directory.
 Usage:
     python generate_eval_figures.py \
         --dataset /path/to/nhanes_cvd_training_data_IMPROVED.csv \
-        --models_dir ./models_improved \
-        --output_dir ./models_improved
+        --models_dir ./models \
+        --output_dir ./models
 """
 
 import argparse
@@ -247,9 +247,9 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataset', required=True,
                         help='Path to nhanes_cvd_training_data_IMPROVED.csv')
-    parser.add_argument('--models_dir', default='./models_improved',
+    parser.add_argument('--models_dir', default='./models',
                         help='Directory containing .pkl model files')
-    parser.add_argument('--output_dir', default='./models_improved',
+    parser.add_argument('--output_dir', default='./models',
                         help='Directory to save generated figures')
     args = parser.parse_args()
 

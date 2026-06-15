@@ -47,15 +47,11 @@ def run_postprocessing_study(
     y_test,
     X_test_raw,
     feature_names,
-    platt_calibrator=None,
     clinical_weight=0.01,
     caffeine_weight=0.01,
     caffeine_period_days=365,
 ):
-    p = model.predict_proba(X_test_scaled)[:, 1]
-    if platt_calibrator is not None:
-        p = platt_calibrator.transform(p)
-    p_calibrated_raw = p
+    p_raw = model.predict_proba(X_test_scaled)[:, 1]
 
     clinical = compute_clinical_scores_vectorized(X_test_raw, feature_names)
     caffeine = compute_caffeine_scores_vectorized(
@@ -63,14 +59,14 @@ def run_postprocessing_study(
     )
 
     conditions = {
-        CONDITION_LABELS[0]: p_calibrated_raw,
+        CONDITION_LABELS[0]: p_raw,
         CONDITION_LABELS[1]: apply_postprocessing(
-            p_calibrated_raw,
+            p_raw,
             clinical_scores=clinical,
             clinical_weight=clinical_weight,
         ),
         CONDITION_LABELS[2]: apply_postprocessing(
-            p_calibrated_raw,
+            p_raw,
             clinical_scores=clinical,
             caffeine_scores=caffeine,
             clinical_weight=clinical_weight,
@@ -106,9 +102,8 @@ def run_postprocessing_study(
 
 LEARNED_CONDITION_LABELS = (
     "A. Raw model",
-    "B. Platt only",
-    "C. + clinical scoring",
-    "D. + clinical + caffeine scoring",
+    "B. + clinical scoring",
+    "C. + clinical + caffeine scoring",
 )
 
 DEFAULT_TAU_SWEEP = (0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.40, 0.50)
@@ -146,9 +141,8 @@ def run_learned_postprocessing_study(
 
     configs = [
         (LEARNED_CONDITION_LABELS[0], None),
-        (LEARNED_CONDITION_LABELS[1], LearnedPostProcessor(use_clinical=False, use_caffeine=False)),
-        (LEARNED_CONDITION_LABELS[2], LearnedPostProcessor(use_clinical=True,  use_caffeine=False)),
-        (LEARNED_CONDITION_LABELS[3], LearnedPostProcessor(use_clinical=True,  use_caffeine=True )),
+        (LEARNED_CONDITION_LABELS[1], LearnedPostProcessor(use_clinical=True,  use_caffeine=False)),
+        (LEARNED_CONDITION_LABELS[2], LearnedPostProcessor(use_clinical=True,  use_caffeine=True )),
     ]
 
     print(f"\n{'Condition':<40} {'tau*':>6} {'ROC-AUC':>8} {'F1':>8} "

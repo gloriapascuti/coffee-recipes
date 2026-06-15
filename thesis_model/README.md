@@ -1,44 +1,58 @@
 # Heart Disease Prediction Model Training
 
-This directory contains scripts for training a machine learning model to predict heart disease risk based on caffeine intake and health profile data.
+This directory contains scripts for training a Gradient Boosting model to predict cardiovascular disease risk from NHANES-derived health data and caffeine intake.
 
 ## Setup
 
-1. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-## Usage
+## Data Pipeline
 
-Train the model with default settings:
+1. Raw NHANES data lives in `../thesis_dataset/Data/`
+2. Prepare the training CSV:
+
 ```bash
-python train_model.py
+python data/prep/prepare_training_data.py
 ```
 
-Train with custom dataset path and output directory:
+Output: `data/nhanes_cvd_training_data.csv`
+
+## Train the Model
+
 ```bash
-python train_model.py --dataset_path ../thesis_dataset/Data --output_path ./models
+python trained_model.py --output_path ./models
+```
+
+Copy artifacts to the Django backend for production inference:
+
+```bash
+python trained_model.py --output_path ../backend/coffee_backend/ml_models
 ```
 
 ## Model Output
 
-The training script will save:
-- `heart_disease_model.pkl` - The trained model
-- `scaler.pkl` - StandardScaler for feature normalization
-- `encoders.pkl` - Label encoders for categorical variables
-- `feature_names.pkl` - List of feature names in order
+The training script saves to the output directory:
+
+- `heart_disease_model.pkl` — trained Gradient Boosting classifier
+- `scaler.pkl` — StandardScaler for feature normalization
+- `encoders.pkl` — label encoders for categorical variables
+- `feature_names.pkl` — ordered feature list used at inference time
+- `optimal_threshold.txt` — tuned decision threshold (τ = 0.15)
+- `model_metrics.csv`, `threshold_metrics.csv` — evaluation metrics
+- `feature_importance_cvd.png` — feature importance chart
+
+## Experiments
+
+Thesis experiment suite (model comparison, hyperparameter tuning, post-processing):
+
+```bash
+python experiments/run_experiments.py
+```
+
+Results are saved to `experiments/outputs/`. `CANONICAL_REFERENCE.json` is the authoritative source for thesis metrics.
 
 ## Integration with Django
 
-To use the trained model in the Django backend:
-
-1. Copy the model files to `backend/coffee_backend/coffee/models/ml/`
-2. Update `coffee/views.py` `generate_prediction` function to load and use the model
-3. Ensure feature engineering matches the training pipeline
-
-## Notes
-
-- Currently uses synthetic data for demonstration
-- Replace `load_and_preprocess_data()` with actual NHANES dataset loading
-- Feature engineering should match what's collected in the app (caffeine stats, health profile, BP)
+Production model artifacts live in `backend/coffee_backend/ml_models/`. Inference is handled by `coffee/ml_model_utils.py` and exposed via the prediction API in `coffee/views.py`.
