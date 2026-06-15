@@ -131,40 +131,6 @@ def compute_caffeine_scores_vectorized(X, feature_names, period_days=365):
     return s.astype(int)
 
 
-class PlattCalibrator:
-
-    EPS = 1e-7
-
-    def __init__(self):
-        self.lr = LogisticRegression(solver="lbfgs")
-        self._fitted = False
-
-    @staticmethod
-    def _logit(p):
-        p = np.clip(p, PlattCalibrator.EPS, 1.0 - PlattCalibrator.EPS)
-        return np.log(p / (1.0 - p))
-
-    def fit(self, probs_val, y_val):
-        logits = self._logit(np.asarray(probs_val, dtype=float)).reshape(-1, 1)
-        self.lr.fit(logits, np.asarray(y_val).astype(int))
-        self._fitted = True
-        return self
-
-    def transform(self, probs):
-        if not self._fitted:
-            raise RuntimeError("PlattCalibrator must be fit before transform.")
-        logits = self._logit(np.asarray(probs, dtype=float)).reshape(-1, 1)
-        return self.lr.predict_proba(logits)[:, 1]
-
-    @property
-    def params(self):
-        if not self._fitted:
-            raise RuntimeError("PlattCalibrator must be fit before reading params.")
-        A = float(self.lr.coef_[0, 0])
-        B = float(self.lr.intercept_[0])
-        return {"A": A, "B": B}
-
-
 def apply_postprocessing(
     probs_raw,
     clinical_scores=None,

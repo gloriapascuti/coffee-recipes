@@ -34,9 +34,6 @@ from experiments.hyperparam_tuning import (
     grid_search_lr,
     grid_search_rf,
 )
-from experiments.postprocessing import PlattCalibrator
-
-
 OUT_DIR = THIS_DIR / "outputs"
 DATA_CSV = THESIS_MODEL_DIR / "data" / "nhanes_cvd_training_data.csv"
 
@@ -120,19 +117,19 @@ def main():
     print(f"Outputs: {OUT_DIR}")
     print("=" * 70)
 
-    print("\n[1/12] Loading and splitting data")
+    print("\n[1/13] Loading and splitting data")
     print("-" * 70)
     X, y, feature_names, encoders = load_and_preprocess_data(DATA_CSV)
     X_train, X_val, X_test, y_train, y_val, y_test = split_data_3way(X, y, random_state=42)
 
-    print("[2/12] Standardising features (train statistics applied to val/test)")
+    print("[2/13] Standardising features (train statistics applied to val/test)")
     print("-" * 70)
     scaler = StandardScaler()
     X_train_s = scaler.fit_transform(X_train)
     X_val_s   = scaler.transform(X_val)
     X_test_s  = scaler.transform(X_test)
 
-    print("\n[3/12] Grid search for hyperparameters on the validation set")
+    print("\n[3/13] Grid search for hyperparameters on the validation set")
     print("=" * 70)
     lr_best, lr_results = grid_search_lr(X_train_s, y_train, X_val_s, y_val)
     rf_best, rf_results = grid_search_rf(X_train_s, y_train, X_val_s, y_val)
@@ -149,11 +146,11 @@ def main():
     tuning_df.to_csv(OUT_DIR / "hyperparameter_tuning.csv", index=False)
     print(f"\n  -> saved hyperparameter_tuning.csv  ({len(tuning_df)} rows)")
 
-    print("\n[4/12] Training final models with best hyperparameters")
+    print("\n[4/13] Training final models with best hyperparameters")
     print("=" * 70)
     results = train_all_models(X_train_s, y_train, X_val_s, y_val)
 
-    print("\n[5/14] Confusion matrices on the TEST set (tau = 0.5)")
+    print("\n[5/13] Confusion matrices on the TEST set (tau = 0.5)")
     print("=" * 70)
     cm_rows = []
     for name, r in results.items():
@@ -172,7 +169,7 @@ def main():
               f"FN={cm[1,0]:>5,}  TP={cm[1,1]:>5,}")
     pd.DataFrame(cm_rows).to_csv(OUT_DIR / "confusion_matrices_test.csv", index=False)
 
-    print("\n[6/14] Model comparison table on the TEST set (tau = 0.5)")
+    print("\n[6/13] Model comparison table on the TEST set (tau = 0.5)")
     print("=" * 70)
     comp_rows = []
     for name, r in results.items():
@@ -190,7 +187,7 @@ def main():
     comp_df.to_csv(OUT_DIR / "model_comparison_test.csv", index=False)
     print(comp_df.to_string(index=False, float_format="{:.3f}".format))
 
-    print("\n[7/14] Per-model threshold sweep on the VALIDATION set")
+    print("\n[7/13] Per-model threshold sweep on the VALIDATION set")
     print("=" * 70)
     print("  Selecting tau per model by maximising F1 (MCC as tie-breaker).\n")
 
@@ -212,7 +209,7 @@ def main():
     for name, tau in per_model_thresholds.items():
         print(f"    {name:<22} tau* = {tau:.2f}")
 
-    print("\n[8/14] Fair comparison on the TEST set "
+    print("\n[8/13] Fair comparison on the TEST set "
           "(each model at its own tau*)")
     print("=" * 70)
     fair_rows = []
@@ -239,7 +236,7 @@ def main():
         print(f"    {metric.upper():<10} -> {winner['model']:<22} "
               f"({metric} = {winner[metric]:.3f}, tau = {winner['tau_opt']:.2f})")
 
-    print("\n[9/14] Confusion matrices on TEST at each model's optimal tau")
+    print("\n[9/13] Confusion matrices on TEST at each model's optimal tau")
     print("=" * 70)
     fair_cm_rows = []
     for name, r in results.items():
@@ -264,7 +261,7 @@ def main():
     )
 
     best_name = max(results, key=lambda n: results[n]["roc_auc"])
-    print(f"\n[10/14] Best model by validation ROC-AUC: {best_name}")
+    print(f"\n[10/13] Best model by validation ROC-AUC: {best_name}")
     print("=" * 70)
 
     chosen = results[best_name]
@@ -275,20 +272,14 @@ def main():
         OUT_DIR / "threshold_sweep_validation.csv", index=False,
     )
 
-    print("\n[11/14] Fitting Platt calibration on the validation set")
-    print("=" * 70)
-    p_val_raw = chosen["model"].predict_proba(X_val_s)[:, 1]
-    platt = PlattCalibrator().fit(p_val_raw, y_val)
-    print(f"  Platt parameters: {platt.params}")
-
-    print("\n[12/14] Final test-set evaluation")
+    print("\n[11/13] Final test-set evaluation")
     print("=" * 70)
     final_metrics, final_cm = final_test_evaluation(
         chosen["model"], optimal_tau, X_test_s, y_test,
         model_name=best_name,
     )
 
-    print("\n[13/14] Post-processing impact study on the test set")
+    print("\n[12/13] Post-processing impact study on the test set")
     print("=" * 70)
 
     print("\n  13a. Legacy formula (hand-tuned constants 0.01 / 0.02)")
@@ -296,7 +287,6 @@ def main():
         chosen["model"], optimal_tau,
         X_test_scaled=X_test_s, y_test=y_test,
         X_test_raw=X_test, feature_names=feature_names,
-        platt_calibrator=platt,
         clinical_weight=0.01,
         caffeine_weight=0.01,
         caffeine_period_days=365,
@@ -318,7 +308,7 @@ def main():
         OUT_DIR / "learned_pp_coefficients.csv", index=False,
     )
 
-    print("\n[14/14] Generating Chapter-3 figure")
+    print("\n[13/13] Generating Chapter-3 figure")
     print("=" * 70)
     fig_path = OUT_DIR / "caffeine_dose_response_curve.png"
     plot_caffeine_dose_response(fig_path)
@@ -352,7 +342,6 @@ def main():
                                "ensemble tie-breaker at <=0.001",
         "best_model": best_name,
         "optimal_threshold": float(optimal_tau),
-        "platt_parameters": platt.params,
         "final_test_metrics": {
             k: (float(v) if not isinstance(v, np.ndarray) else None)
             for k, v in final_metrics.items()

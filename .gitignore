@@ -30,6 +30,12 @@ __pycache__/
 *$py.class
 *.so
 .Python
+.venv/
+venv/
+*.log
+
+# IDE
+.idea/
 
 # misc
 .DS_Store
@@ -41,10 +47,3 @@ __pycache__/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python

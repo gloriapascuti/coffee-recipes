@@ -5,7 +5,6 @@ import Charts from "./Charts";
 import SortButton from "./SortButton";
 import FilterOriginButton from "./FilterOriginButton";
 import InfiniteScroll from "./InfiniteScroll";
-import MyOwnRecipes from "./MyOwnRecipes";
 import styles from "./styles/RUD.module.css";
 import AdminUserTable from "../components/AdminUserTable";
 
@@ -14,12 +13,8 @@ const WS_URL = `${(process.env.REACT_APP_API_URL || 'http://localhost:8000').rep
 export default function RUD() {
     const {
         coffees,
-        userId,
         setCoffees,    // for websocket updates
     } = useContext(CoffeeContext);
-
-    // toggle for "only mine"
-    const [showMine, setShowMine] = useState(false);
 
     // search/filter/sort state
     const [input, setInput]             = useState("");
@@ -75,11 +70,6 @@ export default function RUD() {
             return true; // Only show public recipes
         });
 
-        // only mine?
-        if (showMine) {
-            list = list.filter(c => c.user === userId);
-        }
-
         // name search
         if (input.trim()) {
             list = list.filter(c =>
@@ -94,7 +84,7 @@ export default function RUD() {
 
         console.log("RUD: filtered count:", list.length);
         setFilteredCoffee(list);
-    }, [coffees, showMine, input, selectedOrigin, userId]);
+    }, [coffees, input, selectedOrigin]);
 
     // 3) helpers
     const getBackgroundColor = name => {
@@ -122,12 +112,6 @@ export default function RUD() {
 
             <div id="all-recipes">
                 <div className={styles.sectionTitle}>All recipes</div>
-
-                {/* ↙︎ our new toggle */}
-                {/*<MyOwnRecipes*/}
-                {/*    showMine={showMine}*/}
-                {/*    onToggle={setShowMine}*/}
-                {/*/>*/}
 
                 <div className={styles.searchBar}>
                     <input

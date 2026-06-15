@@ -5,6 +5,25 @@ import styles from './styles/MyRecipes.module.css';
 
 const API_URL = `${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/api`;
 
+const DEFAULT_ORIGINS = [
+    'Costa Rica',
+    'Brazilia',
+    'Columbia',
+    'Puerto Rico',
+    'Ethiopia',
+];
+
+function mergeWithDefaultOrigins(apiOrigins) {
+    const seen = new Set(apiOrigins.map(o => o.name));
+    const merged = [...apiOrigins];
+    DEFAULT_ORIGINS.forEach(name => {
+        if (!seen.has(name)) {
+            merged.push({ id: name, name });
+        }
+    });
+    return merged.sort((a, b) => a.name.localeCompare(b.name));
+}
+
 function authHeaders() {
     const accessToken = localStorage.getItem("access_token");
     const headers = {
@@ -104,10 +123,13 @@ export default function MyRecipes() {
             const response = await fetch(`${API_URL}/origins/`);
             if (response.ok) {
                 const data = await response.json();
-                setOrigins(data);
+                setOrigins(mergeWithDefaultOrigins(data));
+            } else {
+                setOrigins(mergeWithDefaultOrigins([]));
             }
         } catch (err) {
             console.error('Error fetching origins:', err);
+            setOrigins(mergeWithDefaultOrigins([]));
         }
     };
 
